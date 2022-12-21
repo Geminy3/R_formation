@@ -1,0 +1,62 @@
+# Importer des jeux de données
+
+Pour manipuler des données, il nous faut d'abord savoir importer des jeux de données. L'importation dépend en grande partie du format de votre jeu de données : yyy.csv, yyy.xlsx, yyy.xls, yyy.number,...
+Le format de vos données vont nécessiter l'utilisation d'une méthode plutôt qu'un autre.
+Prenons l'exemple d'un fichier excel tout à fait classique : il faut, en premier lieu, importer une librairie dans R afin de pouvoir utiliser des fonctions d'imports.
+
+```{r, results='hide'}
+library(openxlsx) ### Librairie pour l'import de fichier excel
+library(tidyverse) ### Librairie incontournable, mais nous y reviendrons
+library(questionr) ### QuestionR apporte un ensemble de fonctions et de données classique de R
+library(kableExtra)
+```
+
+<div class="alert alert-success" role="alert"> <b>Au sein d'un fichier markdown, vous écrivez des instructions dans des "chunks" comme ci-dessus</b>. Je vous laisse vous renseigner de votre côté sur le fonctionnement de Markdown, qui est très pratique pour créer des documents. Vous pouvez executer vos commande soit ligne par ligne (`CTRL + Entrée`), soit tout le chunk d'un coup (`CTRL + SHIFT + Entrée`). </div>
+
+Une fois nos librairies installées, on peut se lancer dans l'import de fichier. En particulier, la librairie openxlsx est très efficace dans l'import de fichier excel. Mais regardons pour elle est particulièrement efficace. Nous allons importer un fichier avec les fonctinonalités standards de R.
+
+```{r, results='asis', error=TRUE}
+df <- read.csv2("../Sources/vico2020.xlsx", col.names = TRUE)
+```
+Décrivons rapidement ce bout de chunk. Nous créons une variable `df` dans laquelle nous souhaitons importer un fichier qui s'appelle `vico2020.xlsx`. Nous utilisons pour ce faire la fonction `read.csv2()`, à laquelle nous donnons un chemin **relatif** (mais on pourrait aussi lui fournir un chemin **absolu**) vers le fichier que nous voulons importer. En somme, au lieu de naviguer dans nos dossiers comme nous avons l'habiture, nous donnons un chemin à R pour charger le fichier. 
+
+Le chemin se lit de cette manière : 
+
+* `"../"` : Les ".." signifient que nous souhaitons revenir au dossier précédent par rapport à l'endroit où R se situe. Dans un chemin relatif (c'est-à-dire qui ne part pas de la racine de l'ordinateur), le `./` signifie "à l'endroit où nous sommes". 
+* Utiliser `TAB` : En utilisant la touche `TAB` après un '/', vous pourrez voir où R vous situe, et choisir à l'aide de la touche `Entrée`, les dossier et fichiers vers lesquelles vous souhaitez naviguer.
+* `Sources/vico2020.xlsx` : Ce sont l'ensemble des dossiers par lesquelles nous passons pour charger le fichier `vico2020.xlsx`
+
+Pour vérifier que nous avons bien récupérer notre fichier, et qu'il est correctement importé, nous utilisons ici la fonction head(), qui permet de montrer les premiers individus d'un tableau.
+
+Mais il semble ici que rien de ce que nous avons voulu faire n'est fonctionner. Nous obtenons un `Warning` de R, ce qui signifie que nous n'avons pas pu importer le jeu de données correctement. Nous pouvons réessayer cette même manipulation avec le package (ou librairie) `openxlsx`
+
+```{r, results='hide'}
+df <- openxlsx::read.xlsx("../sources/vico2020.xlsx", colNames = TRUE)
+head(df)
+```
+```{r, echo=FALSE}
+kable(head(df)[,1:5], format="markdown")
+```
+
+Cette fois-ci, l'import a bien fonctionné. C'est pourquoi je ne vous recommanderais jamais assez d'utiliser la librairie `openxlsx` pour importer vos données au format excel. On remarque également que la fonction `head` nous affiche le nombre de lignes et de colonnes du tableau : ici il y a 6 individus et 20 variables `df[6 x 20]`. On peut bien sûr importer des données sous une grande variété de format, y compris celles issues de logiciel comme STATA, SAS ou encore SPSS. 
+
+Une fois notre jeu de données importé, nous pouvons regarder rapidement comment celui-ci est construit. Nous avons déjà vu la fonction `head()` qui permet d'observer les premiers lignes, voici plusieurs autres fonctions :
+
+```{r, results='hide'}
+tail(df)   ### Permet d'afficher les dernières lignes d'un tableau
+ncol(df)    ### Affiche le nombre de colonnes (variables)
+nrow(df)    ### Affiche le nombre de lignes (individus)
+dim(df)     ### Affiche les nombres de lignes et de colonnes
+names(df)   ### ou colnames(d) affiche les noms des colonnes (variables)
+```
+```{r}
+str(df)    ### Permet de voir les caractéristiques de chaque variable
+```
+
+Arrêtons-nous un peu sur la fonction str et ses résultats :
+
+* On remarque que les variables ont un **type**, ici `num` et `chr`. Pourquoi des types ? Parce que les variables d'un langage de programmation on souvent des propriétés particulières : on ne fait pas les mêmes traitements entre des nombres et des lettres, de la même manière qu'on ne fait pas les mêmes traitements entre des variables qualitatives et quantitatives.
+* Il existe une variété assez large de type de variable. Les `num`représentents les variables numériques, pas forcément des entiers, qui sont décrits par la variable `int`.
+* `chr` représente les variables de texte, sans plus de spécificités. On peut retrouver plusieurs type de ces variables comme les `factor`, qui permettent de regrouper des modalités sous un même nom, mais aussi `logical`,...
+
+Sans nous attarder sur les types - sur lesquels nous reviendrons - nous pouvons voir qu'a priori toutes les variables n'ont pas été importé de la meilleure des manières : des variables comme `AGE` devrait être une variable de type `int` puisque l'age ici n'est représenté que par des nombres entiers. La variable `SEXE` devrait être au format `factor`, et on pourrait recoder ses modalités. Regardons ça ici.

@@ -1,0 +1,41 @@
+---
+title : "Introduction au recodage avec R"
+author : "Aljoscha Massein"
+site : bookdown::bookdown_site
+documentclass : book
+output : bookdown::gitbook
+github-repo : yes
+link-citations: yes
+always_allow_html: yes
+description : "Guide pour apprendre le recodage avec R, à l'attention des débutants, et des plus à l'aise"
+date : "Sys.time()"
+---
+
+```{r setup, include=FALSE, error=TRUE, warning=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction {-}
+
+Source de travail :
+
+* <a href="https://github.com/juba/tidyverse">Bookdown de Julien Barnier</a>
+* <a href="https://juba.github.io/tidyverse/">Introduction à R et au Tidyverse de Julien Barnier</a>
+* <a href="https://larmarange.github.io/analyse-R/recodage.html">Recodage de variable de Joseph Larmarange</a>
+
+## Formation au recodage de données {-}
+
+Le **recodage de données** est particulièrement important à l'issue de la passation d'un questionnaire. En fonctions des réponses, on peut avoir plusieurs questions qui se posent :
+
+* Certaines variables numériques peuvent-être regroupés dans des catégories
+* Certaines individus peuvent être regroupés au sein d'une même catégorie, notamment pour éviter les modalités avec trop peu d'individus
+* Le format des variables n'est pas forcément le plus pratique pour étudier une variable
+* Certaines questions ont très peu de réponses, on peut éventuellement les supprimer de notre jeu de données
+* Et tout un ensemble de questions qui sont propres à votre objet d'étude. 
+
+Le recodage de vos jeux de données est donc une étape importante de votre travail statistique : c'est avant tout un processus de sélection, de transformation, de modification de l'information des réponses, en "données" exploitables.
+Mais avant d'entrer dans le vif du sujet du recodage, il nous faut d'abord voir quelques bases du fonctionnement de R, et de Rstudio.
+
+
+[Licence Creative Commons Attribution - Pas d’Utilisation Commerciale - Partage dans les Mêmes Conditions 4.0 International](http://creativecommons.org/licenses/by-nc-sa/4.0/).
+![Licence Creative Commons](resources/icons/license_cc.png)

@@ -1,0 +1,123 @@
+# Recoder des variables quantitatives
+
+De la même manière que l'on peut recoder des variables qualitatives, on peut découper des variables quantitatives en groupe, par exemple si l'on souhaite regrouper tous les individus entre 18-25 ans,...
+
+Pour cette opération, nous utilisons la fonction `cut` qui permet de donner soit un nombre de classe, soit des vecteurs de tranche numérique, par exemple `c(0, 18, 25, ...)`
+
+```{r}
+df$AGEclasse <- cut(df$AGE, breaks = 5) ### On ne garde que 5 
+freq(df$AGEclasse)
+```
+
+On peut essayer la même fonction en assignant un vecteur avec nos classes d'âge :
+
+```{r}
+df$AGEclasse <- cut(df$AGE, breaks = c(0, 18, 25, 40, 60, 80))
+freq(df$AGEclasse)
+```
+
+On remarque que contrairement aux fonctions que nous avons utilisé avant, nous ne donnons pas qu'un seul **argument** à la fonction `cut()`. En effet, la très grande majorité des fonctions prennent plusieurs arguments, pour ajouter des options dans le traitement des données. Ici, c'est l'argument `breaks` qui est utilisé. On le retrouve également dans les fonctions permettant de créer des graphiques d'histogramme par exemple. 
+
+On remarque également que nous avons créé une nouvelle variable `AGEclasse` , sans que R ne bronche. On peut créer de nouvelles variables dans un tableau assez simplement, et c'est recommandé pour ne pas perdre les informations existantes.
+
+Si l'on souhaite créer un nouveau tableau avec les variables transformées, il est conseillé de créer un nouvelle objet qui reprend le même tableau. Voici un exemple de manipulation qui peuvent être réalisées
+
+```{r, results='hide'}
+df <- openxlsx::read.xlsx("../Sources/vico2020.xlsx", colNames = TRUE)
+
+df$AGEclasse <- df$AGEclasse <- cut(df$AGE, breaks = c(0, 18, 25, 40, 60, 80))
+df$Sexe_reco <- df$SEXE <- case_when(
+  df$SEXE == "Un homme" & df$AGE > 60 ~ "H+60",
+  df$SEXE == "Une femme" & df$AGE > 60 ~ "F+60",
+  df$SEXE == "Un homme" ~ "H-60",
+  df$SEXE == "Une femme" ~ "f-60",
+  TRUE ~ "Autre"
+)
+
+df2 <- df[c("AGEclasse", "Sexe_reco")]
+head(df2)
+```
+```{r, echo=FALSE}
+kable(head(df2), format="markdown")
+```
+
+#### Renommer des variables
+
+On peut très facilement renommer des variables avec R, en utilisant notamment la fonction `rename()` du tidyverse.
+Il faut assez simplement fournir plusieurs informations à la fonction :
+
+```{r}
+df <- rename(df, 
+       'POLITIQUE' = 'POL',
+       'Niveau_de_diplôme' = 'DIPLONIV')
+c('POL', 'Niveau_de_diplôme') %in% names(df) 
+```
+
+On voit que la syntaxe est un peu particulière puisqu'elle prend la forme `nouveau_nom = ancien_nom`. 
+Nous utilisons également l'opérateur `%in%` qui permet de tester si un des éléments de notre vecteur à gauche de l'expression est présent dans le vecteur (ou l'objet) à droite de l'expression. Ce test nous renvoit des valeurs "vrai" ou "faux" qui permettent de tester et de sélectionner de l'information. 
+
+## Tests et condition
+
+Toutes les sélections fondées sur des tests de conditions fonctionnent de cette manière : si l'on regarde en détails les sorties de cette opération :
+
+```{r}
+(df$AGE < 60)[0:10]
+```
+Les résultats sont un vecteur de la même longueur avec des résultats vrais ou faux. c'est avec ces vecteurs de type `logical`, qu'on appelle également booléens dans d'autres langages informatiques, que l'on peut sélectionner de l'information :
+
+```{r}
+test <- c(rep(TRUE,length(df$AGE)/2), rep(FALSE,length(df$AGE)/2)) ### On créer des TRUE et des FALSE de la longueur de notre tableau
+test <- test[sample(1:length(test))]                    ### On ditribue aléatoirement les TRUE et les FALSE
+df$AGE[test][1:100]                                     ### On regard les 100 premières valeurs de df$AGE qui correspondent au test
+
+df$AGE[1:100]                                           ### On regarde les 100 premières valeurs de df$AGE
+(df$AGE[1:100] == df$AGE[test][1:100])                 ### On compare si les valeurs sont les mêmes
+```
+C'est de cette manière que l'on peut sélectionne de l'information "manuellement". Nous verrons plus tard comment fonctionne le `tidyverse`, et en particulier les fonctions du `dplyr`.
+
+## Exercices
+
+#### On souhaite a présent recoder la variable **numérique** `RESNB` en catégorie. Recodez la variable tel qu'il existe des groupes de 1, 2, 3 à 5 et plus de 5 personnes.
+
+```{r, echo=FALSE}
+df$RESNB_reco <- cut(df$RESNB, breaks = c(0, 1, 2, 5, max(df$RESNB)))
+kable(freq(df$RESNB_reco), format="markdown")
+```
+
+#### Renommez ensuite les catégories en `seul`, `couple`, `famille`, `grande_famille`
+
+```{r, echo=FALSE}
+df$RESNB_reco <- fct_recode(df$RESNB_reco,
+  "seul" = "(0,1]",
+  "couple" = "(1,2]",
+  "famille" = "(2,5]",
+  "grande_famille" = "(5,13]"
+)
+kable(freq(df$RESNB_reco), format="markdown")
+```
+
+Renommez la variable `RESNB_reco` en `Type_RES`
+
+```{r}
+df <- rename(df,
+       'Type_RES' = 'RESNB_reco')
+names(df)
+```
+On souhaite maintenant créer une nouvelle variable pour observer le port du masque en fonction du Sexe qu'on appellera `MASQUE_SEXE`.
+Proposez un recodage pour cette variable.
+
+
+```{r, echo=FALSE}
+df <- read.xlsx("../Sources/vico2020.xlsx")
+
+df$MASQUE_SEXE <- case_when(
+  df$MASQUE == "Oui" & df$SEXE == "Une femme" ~ "F_masque",
+  df$MASQUE == "Oui" & df$SEXE == "Un homme" ~ "H_masque",
+  df$MASQUE == "Non sélectionné" & df$SEXE == "Une femme" ~ "F_non",
+  df$MASQUE == "Non sélectionné" & df$SEXE == "Un homme" ~ "H_non"
+)
+freq(df$MASQUE_SEXE) %>% arrange(desc(n))
+```
+```{r, echo=FALSE}
+kable(arrange(freq(df$MASQUE_SEXE), desc(n)), format="markdown")
+```

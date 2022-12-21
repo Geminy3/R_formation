@@ -1,0 +1,132 @@
+# Premier recodage
+
+```{r}
+print(typeof(df$AGE))
+df$AGE <- as.integer(df$AGE)
+typeof(df$AGE)
+```
+
+Que se passe-t-il dans ce chunk ?
+
+D'abord, on affiche le type de la variable AGE. On utilise la fonction `print()` qui affiche un résultat, dans laquelle on demande le type de la variable AGE grâce à la fonction (très utile) `typeof`. Pour sélectionner une colonne, ou une variable de notre tableau `df`, nous utilisons l'opérateur `$`. 
+
+Observons la ligne suivante :
+
+`df$AGE <- as.integer(df$AGE)`
+
+On utilise ici la flèche `<-` d'assignation, qui permet de donner une valeur à un objet. Ici on attribue à la variable `df$AGE` une nouvelle valeur. En l'occurence, on lui assigne la variable `df$AGE`, mais au format "integer" grâce à la fonction `as.integer()`, comme on peut l'observer avec les résultats de la ligne suivante. 
+
+Nous venons ici d'effectuer notre première opération de recodage. Félicitations !
+
+En plus de l'opérateur `$`, on pourrait également sélectionner une colonne en utilisant les `[]`, et nous verrons plus tard que cela est très pratique.
+
+
+```{r, results='hide'}
+print(head(df['AGE']))
+print(head(df$AGE))
+```
+```{r, echo=FALSE}
+kable(print(head(df['AGE'])), format="markdown")
+print(head(df$AGE))
+```
+
+On note que les sorties ne sont pas exactement les mêmes. `df$AGE` renvoit ce qu'on appelle un **vecteur**, c'est à dire un ensemble d'observations qui s'écrit sous la forme :
+
+`variable <- c(1, 2, 3, 4, 5, 6)`
+
+`df['AGE']` renvoit pour sa part une liste, qui est plus proche d'un tableau de données.
+
+## Recoder des modalités
+
+Transformer le type des variables peut être très utile dans certains cas, mais ce n'est pas la première chose qui nous intéresse ici. On voudrait plus recoder la variable `SEXE` pour que les modalités soient plus courtes.
+Voici notre plan de recodage :
+
+* "Un homme" doit être recoder en "H"
+* "Une femme", doit être recoder en "F"
+
+Voici le bout de code que nous pouvons utiliser :
+
+```{r}
+df$SEXE_reco[df$SEXE == "Un homme"] <- "H"
+df$SEXE_reco[df$SEXE == "Une femme"] <- "F"
+unique(df$SEXE_reco)
+```
+Décrivons ce bout de code :
+
+La première ligne `df$SEXE[df$SEXE == "Un homme"] <- "H"` peut être décortiquée en plusieurs parties :
+
+* On sélectionne d'abord la variable que l'on souhaite recoder avec `df$SEXE`.
+* On veut choisir uniquement certains individus de cette variable. On sélectionne donc au sein de la variable `SEXE` avec les crochets `[]` qui nous permettent de donner des **conditions**.
+* On fournit ensuite la condition de sélection au sein des crochets. Ici la condition prend cette forme `df$SEXE == "Un homme"`.
+* La condition peut se lire : "Pour les modalités 'Un homme' de la variable SEXE"
+* On attribue ensuite la valeur "H" à tous les individus qui correspondent à notre condition
+
+On remarque l'utilisation de l'opérateur `==`. Il existe une variété d'opérateur qui permettent de tester de l'information. Voici les différents types d'**opérateurs de comparaisons**:
+
+* `==` pour les tests d'égalités (à na pas confondre à `=`le égal simple qui attribue de la même manière que la flèche `<-`)
+* `!=` pour les tests de différences (renvoie "VRAI" quand les éléments sont différents)
+* `>`, `>=`, `<`, `<=` pour test l'infériorité ou la supériorité de deux éléments
+* `%in%` pour tester la présence d'un ou plusieurs objets dans un autre.
+
+Après avoir appliqué la même opération pour la modalité "Une femme", on regarde si notre recodage a fonctionne. En utilisant la fonction `unique()` on peut regarder toutes les valeurs uniques que prennent les modalités d'une variable.
+
+
+Cette manière de recoder est assez "old-school", et il existe des méthodes beaucoup plus simple pour recoder des modalités d'une variable. En particulier les fonctions `ifelse` et `case_when`.
+
+### ifelse
+
+ifelse est une fonction intégré à R qui permet de poser une condition et de renvoyer :
+
+* un résultat si la condition est vraie
+* un résultat si la condition est fausse 
+
+```{r}
+df <- openxlsx::read.xlsx("../Sources/vico2020.xlsx", colNames = TRUE)
+df$SEXE_reco <- ifelse(df$SEXE == "Un homme", "H", "F")
+unique(df$SEXE_reco)
+```
+ifelse permet ainsi de recoder une variable binaire, c'est-à-dire qui n'a que deux modalités (H/F, Oui/Non, Vrai/faux,...)
+
+Case_when permet d'élargir le nombre de conditions. 
+
+### case_when
+
+Case_when, comme son nom l'indique, permet de recoder une modalité en fonction d'une condition. L'avantage, c'est qu'on peut lui donner autant de condition qu'on veut. 
+Pour utiliser cette fonction, il faut installer et charger la **librairie dplyr**, qui fait partie de l'ensemble du **tidyverse**.
+
+```{r, results='hide'}
+library(dplyr)
+```
+```{r}
+df <- openxlsx::read.xlsx("../Sources/vico2020.xlsx", colNames = TRUE)
+
+df$SEXE_reco <- dplyr::case_when(
+  df$SEXE == "Un homme" ~ "H",
+  df$SEXE == "Une femme" ~ "F"
+)
+unique(df$SEXE_reco)
+```
+On peut indiquer autant de conditions que l'on souhaite, par exemple si on souhaite créer une catégorie pour les hommes et femmes de plus de 60 ans.
+
+```{r, results='hide'}
+df <- openxlsx::read.xlsx("../Sources/vico2020.xlsx", colNames = TRUE)
+
+df$SEXE_reco <- case_when(
+  df$SEXE == "Un homme" & df$AGE > 60 ~ "H+60",
+  df$SEXE == "Une femme" & df$AGE > 60 ~ "F+60",
+  df$SEXE == "Un homme" ~ "H-60",
+  df$SEXE == "Une femme" ~ "f-60",
+  TRUE ~ "Autre"
+)
+
+questionr::freq(df$SEXE_reco, cum=TRUE)
+```
+```{r, echo=FALSE}
+kable(questionr::freq(df$SEXE_reco, cum=TRUE), format="markdown")
+```
+
+Une particularité de case_when est qu'il faut toujours indiquer les conditions les plus spécifiques en première, sinon le recodage ne fonctionne pas. Un peu comme si une fois la variable recodée, la condition ne sélectionne plus les individus traités. Ce qui permet également de faire des raccourcis, même si cette syntaxe n'est pas forcément conseillé pour la lisbilité de votre code. C'est pour ces raison que la ligne `df$SEXE == "Un homme" ~ "H-60"` ne recode pas toutes les modalités "Un homme". 
+
+Enfin, la ligne `TRUE ~ "Autre"` permet d'assigner la valeur "Autre" pour les individus qui ne correspondent à aucune des conditions que vous donnez à case_when(). 
+
+Nous utilisons ici la fonction `freq()` de la librairie `questionR` pour afficher les pourcentages et les effectifs pour chaque modalité.

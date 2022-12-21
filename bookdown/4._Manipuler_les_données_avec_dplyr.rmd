@@ -1,0 +1,248 @@
+# Sélectionner l'information avec dplyr
+
+LE package dyplr ajoute un certain nombre de fonctions pour sélectionner de l'information, renommer des variables, recoder de l'information. 
+
+Nous avons déjà vu quelques unes des fonctions du dyplr, comme la fonction `rename()`. Il en existe un certain nombre qui peuvent permettre de plus simplement sélectionner de l'information
+
+## select() et filter()
+
+La fonction `select()` est une des plus courante et facilite la sélection de colonnes (ou variables) dans un tableau. Au lieu de recourir à de longues "phrases" comme `df[c("col1", "col2")]`, la fonction rend la sélection plus lisible :
+
+```{r, results='hide'}
+select(df, SEXE, RESNB, AGE)
+```
+```{r, echo=FALSE}
+kable(head(select(df, SEXE, RESNB, AGE)), format="markdown")
+```
+On peut fournir autant de variables que l'on souhaite à select, tout en évitant la syntaxe des vecteurs `c()`, et en évitant également l'utilisation de guillement `"` pour chaque variable. Cela permet de plus simplement sélectionner l'information. On peut également utiliser select pour ne pas sélectionner une partie de l'information en utilisant l'opérateur `-`:
+
+```{r, results='hide'}
+select(df, -AGE, -SEXE)
+```
+```{r, echo=FALSE}
+kable(head(select(df, -AGE, -SEXE))[,1:8], format="markdown")
+```
+
+En dernier, select permet également de sélectionner un ensemble de colonne, en utilisant l'opérateur `:`, de la même manière que nous le faisons avec les `[]` : 
+
+```{r, results='hide'}
+select(df, AGE:RESISOL)
+```
+```{r, echo=FALSE}
+kable(head(select(df, AGE:RESISOL)), format="markdown")
+```
+
+On peut bien sûr décider de ne pas conservé un ensemble de colonne avec l'utilisation des opérateurs `-` et `:`, sous la forme `select(df, -AGE:-RESISOL)`. On peut également assigner le résultats à une variable, qui conservera que les résultats du sous-ensemble du tableau traité par la fonction `select()`.
+
+En particulier `select()` est très pratique pour sélectionner des variables par noms de colonne. On peut utiliser tout un ensemble d'argument pour sélectionner à partir d'une "expression".
+
+```{r, results='hide'}
+select(df, starts_with("RES"))
+```
+```{r, echo=FALSE}
+kable(head(select(df, starts_with("RES"))), format="markdown")
+```
+On voit ici que `select()` n'a sélectionné que les colonne qui commence par "RES". Il existe un ensemble d'argument qui fonctionne de la même manière :
+
+* `ends_with()` : qui termine par l'expression
+* `contains()` : qui contient l'expression
+* `matches()` : qui matche avec l'expression
+
+Contains et matches fonctionne à peu près de la même manière. 
+
+`filter()` permet quant à elle de sélectionner des individus, ou des lignes, selon des conditions. De la même manière que nous avons utilisé la syntaxe `df[df$AGE > 60]`, on peut utiliser filter de cette manière :
+
+```{r, results='hide'}
+filter(df, SITCONJ == "Non", SEXE == "Une femme", MASQUE == "Oui")
+```
+```{r, echo=FALSE}
+kable(head(filter(df, SITCONJ == "Non", SEXE == "Une femme", MASQUE == "Oui"))[, 1:5], format="markdown")
+```
+
+`filter()`, de la même manière que `select()` permet d'appliquer autant d'opération que l'on souhaite en argument.
+
+## arrange() & count()
+
+La fonction arrange() vous permet de rapidement trier un tableau par colonne. Voici à quoi ressemble sa syntaxe : 
+
+```{r, results='hide'}
+arrange(df, AGE)
+```
+```{r, echo=FALSE}
+kable(head(arrange(df, AGE))[, 1:5], format="markdown")
+```
+
+On peut choisir de trier le tableau non pas de manière croissante, mais de manière décroissante en utilisant l'argument `desc()` autour de la variable à trier.
+
+```{r, results='hide'}
+arrange(df, desc(AGE))
+```
+```{r, echo=FALSE}
+kable(head(arrange(df, desc(AGE)))[, 1:5], format="markdown")
+```
+
+La fonction `count()` permet de compter le nombre d'individu d'une modalité, ou d'un groupe. Par exemple si l'on souhaite savoir le nombre de femme et d'homme dans notre tableau :
+
+```{r, results='hide'}
+count(df, SEXE)
+```
+```{r, echo=FALSE}
+kable(head(count(df, SEXE)), format="markdown")
+```
+
+## Mutate() & groupby()
+
+Ici, on monte d'un cran conceptuellement et en terme d'écriture du code. la fonction `mutate()` permet de créer une nouvelle colonne dans notre tableau, en principe avec les variables existantes déjà dans le tableau. Cette fonction peut être très utile si l'on souhaite ajouter de l'information à partir de l'information déjà existante. 
+
+```{r, results='hide'}
+temp <- mutate(df, 
+       AGE_gp = AGE/10)
+select(temp, AGE_gp)
+```
+```{r, echo=FALSE}
+kable(head(select(temp, AGE_gp)), format="markdown")
+```
+Cependant, cette fonction n'est posible que si l'on utilise une colonne afin d'y faire des opérations qui renvoie le nombre exacte d'observations. On ne peut pas aussi facilement créer une nouvelle variable. Si l'on souhaite ajouter une colonne qui compte le nombre de personne qui ont le même age :
+```{r, error=TRUE}
+temp <- mutate(df, 
+       AGE_gp = count(df, AGE))
+```
+On a l'erreur suivante : `✖ 'AGE_gp' must be size 2000 or 1, not 57.`. Cela signifie que nous n'avons pas assez d'observation pour créer une nouvelle colonne. 
+
+Dans ce cas, on peut utiliser la fonction `groupby()`, qui permet de grouper les observations pour chaque modalité d'une variable sélectionnée. Cela permet de définir des gruopes sur lesquelles on peut appliquer des fonctions. Si l'on ne donne aucune autre instruction que `group_by()`, il ne se passe presque rien :
+
+```{r, results='hide'}
+group_by(df, SEXE)
+```
+```{r, echo=FALSE}
+kable(head(group_by(df, SEXE))[,1:5], format="markdown")
+```
+L'intérêt de groupby intervient quand on applique d'autres fonctions après son premier traitement
+
+```{r, results='hide'}
+count(group_by(df, AGE, SEXE))
+```
+```{r, echo=FALSE}
+kable(head(count(group_by(df, AGE, SEXE))), format="markdown")
+```
+
+On peut également créer des groupes avec plusieurs variables, pour affiner notre connaissance sur un groupe d'individu.On peut également utiliser les fonctions `slice()`, `slice_min()` ou `slice_max()` pour sélectionner certains individus pour chaque groupe. Par exemple, en utilisante `slice_max()`, on récupère tous les individus, pour nos catégories, qui ont la valeur la plus élevé de la variable choisie : 
+
+```{r, results='hide'}
+select(slice_max(group_by(df, AGE), RESNB), SEXE, RESNB)
+```
+```{r, echo=FALSE}
+select(slice_max(group_by(df, AGE), RESNB), SEXE, RESNB) %>% kable() %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+Ici, on veut observer pour chaque âge les individus pour lesquels le nombre de personnes avec lesquels elles ont passées leur confinement est le plus élevé de cet âge. ça n'a pas forcément beaucoup de sens, mais cela peut être beaucoup plus utile si l'on veut observer les âge maximum pour chaque groupe "POL" par exemple : 
+
+```{r, results='hide'}
+temp <- count(select(slice_max(group_by(df, POL), AGE)), POL)
+temp2 <- unique(select(slice_max(group_by(df, POL), AGE), AGE))
+merge.data.frame(temp, temp2)
+```
+```{r, echo=FALSE}
+merge.data.frame(temp, temp2) %>% arrange(n) %>% kable() %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+
+
+Qu'avons nous fait ici ?
+
+* d'abord nous avons sélectionner le nombre de personne qui sont les plus âgés de leur catégorie politique et nous avons stocké ces valeurs dans la variable `temp`
+* Ensuite nous avons pris l'âge des personnes personnes les plus âgés pour chaque groupe politique et les avons stocké dans la variable `temp2`
+* Enfin, nous avons fusionné ces deux tableaux afin d'avoir un seul tableau qui résume toutes ces informations. 
+
+Ces sélections ne sont pas si difficile, mais la lecture et l'écriture du petit script ci-dessus peut-être difficile. D'abord parce que nous utilisons un certain nombre de fonctions, qui ont chacune besoin de leur argument, et parce que l'on doit bien déclarer à chaque fois toutes les informations dont ont besoins ces fonctions.
+
+## What %>% the %>% pipe 
+
+Quand on manipule un tableau de données, il est très fréquent d’enchaîner plusieurs opérations. On va par exemple extraire une sous-population avec filter, sélectionner des colonnes avec select puis trier selon une variable avec arrange, etc. Le package dyplr intègre en plus des fonctions une nouvelle syntaxe d'écriture qui permet d'enchaîner les opérations grâce à l'opérateur `%>%` qu'on appelle un `pipe`. Comment fonctionne cette syntaxe ? Voici un exemple simple : 
+
+```{r, results='hide'}
+df %>% filter(AGE == 30)
+```
+```{r, echo=FALSE}
+df %>% filter(AGE == 30) %>% select(1:8) %>% kable() %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+Le **pipe** permet de rendre beaucoup plus lisible les enchaînements d'opération que l'on applique sur nos données, et d'ainsi faciliter la lecture et l'écriture de nos manipulations. 
+Le second avantage est de pouvoir appliquer les fonctions dans leur ordre "logique", c'est-à-dire les unes à la suite des autres, et non plus d'emboîter chacune des opérations. Enfin, en lisant cette syntaxe : `count(select(slice_max(group_by(df, POL), AGE)), POL)`, on peut facilement se perdre dans les arguments (ou paramètres) que l'on donne à nos fonctions.
+
+On peut recopier ce même enchaînement d'opérations grâce à un **pipe** : 
+
+```{r}
+df %>% group_by(POL) %>%
+  slice_max(AGE) %>%
+  select(AGE, POL) %>%
+  count() %>%
+  kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped") ### On utilise ici kable pour l'affichage de nos données sur ce fichier html.
+```
+Beaucoup plus lisible et simple d'écriture non ?
+
+Pour résumer, le pipe prend les résultats à sa gauche, pour les donner en argument à la fonction de sa droite, ou qui sont situés après dans le cas où l'on fait des retours à la ligne pour la lisibilité. 
+
+## summarise()
+
+...
+
+## Exercices : 
+
+**1. Dans le tableau de données VICO, créer une variable `tmp` qui contient les hommes de plus de 60 grâce à la fonction `filter()` :**
+
+```{r, echo=FALSE}
+filter(df, SEXE == "Un homme", AGE > 60) %>% kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+
+**2. En utilisant la fonction `slice()` afficher les 5 premiers individus du tableau et le 10e individu du tableau : **
+
+```{r, echo=FALSE}
+slice(df, 1:5, 10) %>% kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+**3. on souhaite maintenant avoir un tableau des individus âgé de 20 à 62 ans compris, et ne conserver que les colonnes `MASQUE`, `RESISOL`, `SEXE`, `AGE` :** 
+
+```{r, echo=FALSE}
+df %>% filter(AGE >= 20 & AGE <= 62) %>% select(MASQUE, RESISOL, SEXE, AGE) %>% arrange(AGE) %>% kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+**4. Si vous ne l'avez pas fait, re-effectuez les exercices précédents en utilisant des *pipe* `%>%`. **
+
+**5. Grouper le tableau par `SEXE` et par `MASQUE`, afin de calculer la moyenne d'âge de chaque groupe, trier par cette même moyenne. Le tableau doit ressembler à celui-ci  :**
+
+```{r, echo=FALSE}
+df %>% 
+  group_by(SEXE, MASQUE) %>%
+  summarise(
+    MOY = mean(AGE)
+  ) %>%
+  arrange(MOY) %>%
+  kable(booktabs = TRUE) %>% 
+  kable_styling("striped")
+```
+
+**6. Complétez le code ci-dessous pour obtenir un tableau des femmes de 30 à 50 ans qui portent un masque, en sélectionnant les colonnes concernées, et en créant une nouvelle colonne avec les effectifs par age. Le résultat doit être un tableau avec l'ensemble des effectifs des femmes pour chaque âge entre 30 et 50 ans qui portent un masque :**
+
+```{}
+df %>%
+  filter(AGE >= 30 & ... <= ...,  ...) %>% 
+  s...(..., ...) %>%
+  g...() %>%
+  mutate(
+    nb = n()
+  ) %>%
+  arrange(AGE) %>%
+  u...()
+```
+```{r, echo=FALSE}
+df %>%
+  filter(SEXE == "Une femme", AGE >= 30 & AGE <= 50,  MASQUE == "Oui") %>% 
+  select(SEXE, AGE, MASQUE) %>%
+  group_by(AGE) %>%
+  mutate(
+    nb = n()
+  ) %>%
+  arrange(AGE) %>%
+  #unite(SEXE, col = SEXE, AGE, sep= "-") %>%
+  unique %>%
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+
+```

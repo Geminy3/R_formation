@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>1 Importer des jeux de données | Introduction au recodage avec R</title>
+  <meta name="description" content="Guide pour apprendre le recodage avec R, à l’attention des débutants, et des plus à l’aise" />
+  <meta name="generator" content="bookdown 0.29 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="1 Importer des jeux de données | Introduction au recodage avec R" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Guide pour apprendre le recodage avec R, à l’attention des débutants, et des plus à l’aise" />
+  <meta name="github-repo" content="true" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="1 Importer des jeux de données | Introduction au recodage avec R" />
+  
+  <meta name="twitter:description" content="Guide pour apprendre le recodage avec R, à l’attention des débutants, et des plus à l’aise" />
+  
+
+<meta name="author" content="Aljoscha Massein" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="index.html"/>
+<link rel="next" href="premier-recodage.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Introduction</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#formation-au-recodage-de-données"><i class="fa fa-check"></i>Formation au recodage de données</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="importer-des-jeux-de-données.html"><a href="importer-des-jeux-de-données.html"><i class="fa fa-check"></i><b>1</b> Importer des jeux de données</a></li>
+<li class="chapter" data-level="2" data-path="premier-recodage.html"><a href="premier-recodage.html"><i class="fa fa-check"></i><b>2</b> Premier recodage</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="premier-recodage.html"><a href="premier-recodage.html#recoder-des-modalités"><i class="fa fa-check"></i><b>2.1</b> Recoder des modalités</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="premier-recodage.html"><a href="premier-recodage.html#ifelse"><i class="fa fa-check"></i><b>2.1.1</b> ifelse</a></li>
+<li class="chapter" data-level="2.1.2" data-path="premier-recodage.html"><a href="premier-recodage.html#case_when"><i class="fa fa-check"></i><b>2.1.2</b> case_when</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="recoder-des-variables-quantitatives.html"><a href="recoder-des-variables-quantitatives.html"><i class="fa fa-check"></i><b>3</b> Recoder des variables quantitatives</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="recoder-des-variables-quantitatives.html"><a href="recoder-des-variables-quantitatives.html#tests-et-condition"><i class="fa fa-check"></i><b>3.1</b> Tests et condition</a></li>
+<li class="chapter" data-level="3.2" data-path="recoder-des-variables-quantitatives.html"><a href="recoder-des-variables-quantitatives.html#exercices"><i class="fa fa-check"></i><b>3.2</b> Exercices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html"><i class="fa fa-check"></i><b>4</b> Sélectionner l’information avec dplyr</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#select-et-filter"><i class="fa fa-check"></i><b>4.1</b> select() et filter()</a></li>
+<li class="chapter" data-level="4.2" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#arrange-count"><i class="fa fa-check"></i><b>4.2</b> arrange() &amp; count()</a></li>
+<li class="chapter" data-level="4.3" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#mutate-groupby"><i class="fa fa-check"></i><b>4.3</b> Mutate() &amp; groupby()</a></li>
+<li class="chapter" data-level="4.4" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#what-the-pipe"><i class="fa fa-check"></i><b>4.4</b> What %&gt;% the %&gt;% pipe</a></li>
+<li class="chapter" data-level="4.5" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#summarise"><i class="fa fa-check"></i><b>4.5</b> summarise()</a></li>
+<li class="chapter" data-level="4.6" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#exercices-1"><i class="fa fa-check"></i><b>4.6</b> Exercices :</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html"><i class="fa fa-check"></i><b>5</b> Boucles, fonctions et conditions</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#boucles"><i class="fa fa-check"></i><b>5.1</b> Boucles</a></li>
+<li class="chapter" data-level="5.2" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#conditions"><i class="fa fa-check"></i><b>5.2</b> Conditions</a></li>
+<li class="chapter" data-level="5.3" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#fonctions"><i class="fa fa-check"></i><b>5.3</b> Fonctions</a></li>
+<li class="chapter" data-level="5.4" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#exercices-2"><i class="fa fa-check"></i><b>5.4</b> Exercices</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Introduction au recodage avec R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="importer-des-jeux-de-données" class="section level1 hasAnchor" number="1">
+<h1><span class="header-section-number">1</span> Importer des jeux de données<a href="importer-des-jeux-de-données.html#importer-des-jeux-de-données" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<p>Pour manipuler des données, il nous faut d’abord savoir importer des jeux de données. L’importation dépend en grande partie du format de votre jeu de données : yyy.csv, yyy.xlsx, yyy.xls, yyy.number,…
+Le format de vos données vont nécessiter l’utilisation d’une méthode plutôt qu’un autre.
+Prenons l’exemple d’un fichier excel tout à fait classique : il faut, en premier lieu, importer une librairie dans R afin de pouvoir utiliser des fonctions d’imports.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="importer-des-jeux-de-données.html#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(openxlsx) <span class="do">### Librairie pour l&#39;import de fichier excel</span></span>
+<span id="cb1-2"><a href="importer-des-jeux-de-données.html#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse) <span class="do">### Librairie incontournable, mais nous y reviendrons</span></span>
+<span id="cb1-3"><a href="importer-des-jeux-de-données.html#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(questionr) <span class="do">### QuestionR apporte un ensemble de fonctions et de données classique de R</span></span>
+<span id="cb1-4"><a href="importer-des-jeux-de-données.html#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code></pre></div>
+<div class="alert alert-success" role="alert">
+<b>Au sein d’un fichier markdown, vous écrivez des instructions dans des “chunks” comme ci-dessus</b>. Je vous laisse vous renseigner de votre côté sur le fonctionnement de Markdown, qui est très pratique pour créer des documents. Vous pouvez executer vos commande soit ligne par ligne (<code>CTRL + Entrée</code>), soit tout le chunk d’un coup (<code>CTRL + SHIFT + Entrée</code>).
+</div>
+<p>Une fois nos librairies installées, on peut se lancer dans l’import de fichier. En particulier, la librairie openxlsx est très efficace dans l’import de fichier excel. Mais regardons pour elle est particulièrement efficace. Nous allons importer un fichier avec les fonctinonalités standards de R.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="importer-des-jeux-de-données.html#cb2-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv2</span>(<span class="st">&quot;../Sources/vico2020.xlsx&quot;</span>, <span class="at">col.names =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Warning in read.table(file = file, header = header, sep = sep, quote = quote, : line 1 appears to contain embedded nulls</code></pre>
+<pre><code>## Warning in read.table(file = file, header = header, sep = sep, quote = quote, : ligne finale incomplète trouvée par readTableHeader dans &#39;../Sources/
+## vico2020.xlsx&#39;</code></pre>
+<p>Décrivons rapidement ce bout de chunk. Nous créons une variable <code>df</code> dans laquelle nous souhaitons importer un fichier qui s’appelle <code>vico2020.xlsx</code>. Nous utilisons pour ce faire la fonction <code>read.csv2()</code>, à laquelle nous donnons un chemin <strong>relatif</strong> (mais on pourrait aussi lui fournir un chemin <strong>absolu</strong>) vers le fichier que nous voulons importer. En somme, au lieu de naviguer dans nos dossiers comme nous avons l’habiture, nous donnons un chemin à R pour charger le fichier.</p>
+<p>Le chemin se lit de cette manière :</p>
+<ul>
+<li><code>"../"</code> : Les “..” signifient que nous souhaitons revenir au dossier précédent par rapport à l’endroit où R se situe. Dans un chemin relatif (c’est-à-dire qui ne part pas de la racine de l’ordinateur), le <code>./</code> signifie “à l’endroit où nous sommes”.</li>
+<li>Utiliser <code>TAB</code> : En utilisant la touche <code>TAB</code> après un ‘/’, vous pourrez voir où R vous situe, et choisir à l’aide de la touche <code>Entrée</code>, les dossier et fichiers vers lesquelles vous souhaitez naviguer.</li>
+<li><code>Sources/vico2020.xlsx</code> : Ce sont l’ensemble des dossiers par lesquelles nous passons pour charger le fichier <code>vico2020.xlsx</code></li>
+</ul>
+<p>Pour vérifier que nous avons bien récupérer notre fichier, et qu’il est correctement importé, nous utilisons ici la fonction head(), qui permet de montrer les premiers individus d’un tableau.</p>
+<p>Mais il semble ici que rien de ce que nous avons voulu faire n’est fonctionner. Nous obtenons un <code>Warning</code> de R, ce qui signifie que nous n’avons pas pu importer le jeu de données correctement. Nous pouvons réessayer cette même manipulation avec le package (ou librairie) <code>openxlsx</code></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="importer-des-jeux-de-données.html#cb5-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> openxlsx<span class="sc">::</span><span class="fu">read.xlsx</span>(<span class="st">&quot;../sources/vico2020.xlsx&quot;</span>, <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb5-2"><a href="importer-des-jeux-de-données.html#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(df)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="right">ID</th>
+<th align="left">SEXE</th>
+<th align="right">AGE</th>
+<th align="left">SITCONJ</th>
+<th align="right">RESNB</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">1</td>
+<td align="left">Une femme</td>
+<td align="right">30</td>
+<td align="left">Non</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">2</td>
+<td align="left">Une femme</td>
+<td align="right">30</td>
+<td align="left">Non</td>
+<td align="right">5</td>
+</tr>
+<tr class="odd">
+<td align="right">3</td>
+<td align="left">Une femme</td>
+<td align="right">24</td>
+<td align="left">Non</td>
+<td align="right">2</td>
+</tr>
+<tr class="even">
+<td align="right">4</td>
+<td align="left">Une femme</td>
+<td align="right">45</td>
+<td align="left">Oui</td>
+<td align="right">2</td>
+</tr>
+<tr class="odd">
+<td align="right">5</td>
+<td align="left">Une femme</td>
+<td align="right">57</td>
+<td align="left">Non</td>
+<td align="right">1</td>
+</tr>
+<tr class="even">
+<td align="right">6</td>
+<td align="left">Un homme</td>
+<td align="right">35</td>
+<td align="left">Oui</td>
+<td align="right">4</td>
+</tr>
+</tbody>
+</table>
+<p>Cette fois-ci, l’import a bien fonctionné. C’est pourquoi je ne vous recommanderais jamais assez d’utiliser la librairie <code>openxlsx</code> pour importer vos données au format excel. On remarque également que la fonction <code>head</code> nous affiche le nombre de lignes et de colonnes du tableau : ici il y a 6 individus et 20 variables <code>df[6 x 20]</code>. On peut bien sûr importer des données sous une grande variété de format, y compris celles issues de logiciel comme STATA, SAS ou encore SPSS.</p>
+<p>Une fois notre jeu de données importé, nous pouvons regarder rapidement comment celui-ci est construit. Nous avons déjà vu la fonction <code>head()</code> qui permet d’observer les premiers lignes, voici plusieurs autres fonctions :</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="importer-des-jeux-de-données.html#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tail</span>(df)   <span class="do">### Permet d&#39;afficher les dernières lignes d&#39;un tableau</span></span>
+<span id="cb6-2"><a href="importer-des-jeux-de-données.html#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ncol</span>(df)    <span class="do">### Affiche le nombre de colonnes (variables)</span></span>
+<span id="cb6-3"><a href="importer-des-jeux-de-données.html#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(df)    <span class="do">### Affiche le nombre de lignes (individus)</span></span>
+<span id="cb6-4"><a href="importer-des-jeux-de-données.html#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(df)     <span class="do">### Affiche les nombres de lignes et de colonnes</span></span>
+<span id="cb6-5"><a href="importer-des-jeux-de-données.html#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(df)   <span class="do">### ou colnames(d) affiche les noms des colonnes (variables)</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="importer-des-jeux-de-données.html#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(df)    <span class="do">### Permet de voir les caractéristiques de chaque variable</span></span></code></pre></div>
+<pre><code>## &#39;data.frame&#39;:    2000 obs. of  20 variables:
+##  $ ID         : num  1 2 3 4 5 6 7 8 9 10 ...
+##  $ SEXE       : chr  &quot;Une femme&quot; &quot;Une femme&quot; &quot;Une femme&quot; &quot;Une femme&quot; ...
+##  $ AGE        : num  30 30 24 45 57 35 35 36 21 64 ...
+##  $ SITCONJ    : chr  &quot;Non&quot; &quot;Non&quot; &quot;Non&quot; &quot;Oui&quot; ...
+##  $ RESNB      : num  1 5 2 2 1 4 2 2 1 1 ...
+##  $ RESISOL    : chr  &quot;Oui, autant que je voulais&quot; &quot;Oui, mais pas autant que je voulais&quot; &quot;Oui, autant que je voulais&quot; &quot;Oui, autant que je voulais&quot; ...
+##  $ LOGAUTRE   : chr  &quot;Non, je suis toujours dans mon logement habituel.&quot; &quot;Non, je suis toujours dans mon logement habituel.&quot; &quot;Non, je suis toujours dans mon logement habituel.&quot; &quot;Non, je suis toujours dans mon logement habituel.&quot; ...
+##  $ MASQUE     : chr  &quot;Non sélectionné&quot; &quot;Non sélectionné&quot; &quot;Oui&quot; &quot;Non sélectionné&quot; ...
+##  $ TEMPS      : chr  &quot;Non, je ne manque pas du tout de temps libre&quot; &quot;Oui, je manque un peu de temps libre&quot; &quot;Non, je ne manque pas vraiment de temps libre&quot; &quot;Non, je ne manque pas du tout de temps libre&quot; ...
+##  $ INQUIET    : chr  &quot;Non sélectionné&quot; &quot;Oui&quot; &quot;Non sélectionné&quot; &quot;Non sélectionné&quot; ...
+##  $ VOISINS    : chr  &quot;Non sélectionné&quot; &quot;Oui&quot; &quot;Non sélectionné&quot; &quot;Non sélectionné&quot; ...
+##  $ CONTROL    : chr  &quot;Non, jamais&quot; &quot;Oui, une seule fois&quot; &quot;Non, jamais&quot; &quot;Non, jamais&quot; ...
+##  $ AMIS       : chr  &quot;Ni plus ni moins&quot; &quot;Moins souvent&quot; &quot;Plus souvent&quot; &quot;Plus souvent&quot; ...
+##  $ FAMILLE    : chr  &quot;Plus souvent&quot; &quot;Plus souvent&quot; &quot;Ni plus ni moins&quot; &quot;Plus souvent&quot; ...
+##  $ POL        : chr  &quot;Je ne me retrouve pas dans ces catégories&quot; &quot;Au centre&quot; &quot;A gauche&quot; &quot;A gauche&quot; ...
+##  $ DIPLONIV   : chr  &quot;Un diplôme universitaire correspondant à plus de 4 années d&#39;études supérieures après le baccalauréat (maîtrise, DEA, DES&quot; &quot;Un diplôme universitaire correspondant à moins de 4 années d&#39;études supérieures après le baccalauréat (par exemple : DUT&quot; &quot;Un diplôme universitaire correspondant à plus de 4 années d&#39;études supérieures après le baccalauréat (maîtrise, DEA, DES&quot; &quot;Un diplôme universitaire correspondant à moins de 4 années d&#39;études supérieures après le baccalauréat (par exemple : DUT&quot; ...
+##  $ SITPROF_rec: chr  &quot;A la recherche d&#39;un emploi&quot; &quot;En études&quot; &quot;A la recherche d&#39;un emploi&quot; &quot;En emploi&quot; ...
+##  $ PCS_rec6   : chr  &quot;Cadres et professions intellectuelles supérieures&quot; &quot;Cadres et professions intellectuelles supérieures&quot; &quot;Cadres et professions intellectuelles supérieures&quot; &quot;Professions intermédiaires&quot; ...
+##  $ REV        : chr  &quot;Moins de 800 euros par mois&quot; &quot;Moins de 800 euros par mois&quot; &quot;6000 euros par mois et plus&quot; &quot;De 5000 euros à moins de 6000 euros par mois&quot; ...
+##  $ POIDS_init : num  0.234 0.745 0.231 0.562 0.206 ...</code></pre>
+<p>Arrêtons-nous un peu sur la fonction str et ses résultats :</p>
+<ul>
+<li>On remarque que les variables ont un <strong>type</strong>, ici <code>num</code> et <code>chr</code>. Pourquoi des types ? Parce que les variables d’un langage de programmation on souvent des propriétés particulières : on ne fait pas les mêmes traitements entre des nombres et des lettres, de la même manière qu’on ne fait pas les mêmes traitements entre des variables qualitatives et quantitatives.</li>
+<li>Il existe une variété assez large de type de variable. Les <code>num</code>représentents les variables numériques, pas forcément des entiers, qui sont décrits par la variable <code>int</code>.</li>
+<li><code>chr</code> représente les variables de texte, sans plus de spécificités. On peut retrouver plusieurs type de ces variables comme les <code>factor</code>, qui permettent de regrouper des modalités sous un même nom, mais aussi <code>logical</code>,…</li>
+</ul>
+<p>Sans nous attarder sur les types - sur lesquels nous reviendrons - nous pouvons voir qu’a priori toutes les variables n’ont pas été importé de la meilleure des manières : des variables comme <code>AGE</code> devrait être une variable de type <code>int</code> puisque l’age ici n’est représenté que par des nombres entiers. La variable <code>SEXE</code> devrait être au format <code>factor</code>, et on pourrait recoder ses modalités. Regardons ça ici.</p>
+
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="index.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="premier-recodage.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

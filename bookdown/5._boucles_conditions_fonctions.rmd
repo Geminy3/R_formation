@@ -1,0 +1,322 @@
+# Boucles, fonctions et conditions
+
+
+## Boucles
+
+La plupart des langages de programmation fonctionne sur le principe de l'algorithmie, c'est-à-dire sur un ensemble d'instruction que l'on donne à l'ordinateur qu'il peut exécuter. Nous avons déjà fait de l'algorithmie dans cette formation à votre insu. Quand vous demandez à R de sélectionner une partie du tableau, puis de renommer certaines variable et d'enfin calculer une moyenne par exemple, vous avez créé une suite d'opération les unes à la suite des autres, vous avez créé un algorithme, félicitations !
+
+On peut vite se retrouver à vouloir effectuer une même opération (comme sélectionner une colonne) plusieurs fois de suite. Vous pourriez alors l'écrire de cette manière :
+
+```{r, error=TRUE, results='hide', eval=FALSE}
+df <- df %>% 
+  select(colonne1) %>%
+  do_something
+df <- df %>%
+  select(colonne2) %>%
+  do_the_same_thing
+...
+```
+
+Mais on voit rapidement que cela va prendre beaucoup de place et d'écriture de code, d'autant plus si vous travaillez sur 500 colonnes !
+On peut alors utiliser des `boucles` afin de réduire l'écriture et d'accélérer le processus. Comme son nom l'indique, une boucle répète la même opération sur des objets qu'on lui donne en ``paramètre`. Il existe plusieurs opérateur pour une boucle, mais retenons surtout `for` qui permet d'écrire des opérations sous la forme :
+
+```{r,eval=FALSE}
+Pour (les objets que je souhaite manipuler) {
+  faire des opérations...
+}
+```
+
+
+Voila comment s'écrit une boucle assez simplement. Voilà ce que donne la syntaxe avec R :
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+for (animal in ZOO) {
+  print(animal)
+  ZOO[ZOO == animal] <- paste(animal, "Vu")
+  print(ZOO)
+}
+```
+
+Concrètement, une boucle utilisant l'opérateur `for` agit assez simplement : pour chaque animal dans le zoo, affiche le nom de l'animal et ajoute "Vu" à la fin pour signifier que l'on a vu l'animal.
+
+Ce type de phrase correspond parfaitement à la manière dont vous devez penser quand vous utilisez un langage de programmation. Ce sont des types d'instruction réalisable pour une machine. Pour un tableau de données on pourrait, par exemple, vouloir recoder un ensemble de NAs en NC (pour des personnes qui ne sont pas concernés par une question). Il faut alors réfléchir de manière algorithmique : Pour chacune de mes variables, vérifier que les individus sont concernés : 
+
+```{r, error=TRUE, results='hide', eval=FALSE}
+for(var in colonnes) {
+  df[var][df$variable_reférence == "Non"] <- "NC"
+}
+```
+
+Je ne garantis pas le fonctionnement de la boucle ci-desuss, mais voici l'idée. On traduit notre volonté en instructions interprétable par la machine, et on l'écrit avec le langage de programmation et sa syntaxe spécifique. On pourrait écrire ce même algorithme en python, en C, en C++... mais avec leur syntaxe propre. Certains langage n'ont pas les mêmes possibilités, ou les mêmes manières de réalier les opérations, il faut donc bien connaître la syntaxe avant de traduire les fonctions dans tous les langages.
+
+Un mécanisme très pratique (et connu) des boucles est `l'itération` ou `l'incrémentation`, c'est-à-dire l'évolution dans une boucle évènement par évènement. Traditionnellement une itération est chiffré et évolue de 1 en 1. 
+
+```{r}
+for (i in 1:10) {
+  print(i)
+}
+```
+Nous avons itérer au travers de la variable ZOO précédemment, nous pouvons montrer concrètement celle-ci :
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+for (i in 1:length(ZOO)) {
+  animal <- ZOO[i]
+  print(paste(i, animal))
+  ZOO[ZOO == animal] <- paste(animal, "Vu")
+  print(ZOO)
+}
+```
+Les boucles sont très pratiques pour réaliser plusieurs fois la même opération, mais ne sont pas les plus efficaces pour réaliser des opérations car elles nécessitent toujours d'instructions que de simple traitement de tableau qui sont pour autant moins intuitif. Attention à ne pas vouloir écrire des boucles tout le temps et partout ! Si une suite d'opération peut être effectuée sans boucle, celle_ci est forcément plus efficace et évite de vous retrouver dans une boucle infinie !
+
+Par exemple, essayons de recoder tous les individus qui prennent une valeur de la variable SEXE avec une boucle `for` :
+
+```{r}
+#### Avec une boucle
+
+df <- openxlsx::read.xlsx("../Sources/vico2020.xlsx", colNames = TRUE)
+start <- Sys.time()
+
+for (row in 1:nrow(df)) {
+  if (df[row, "SEXE"] == "Un homme") {
+    df[row, "SEXE"] <- "H"
+  } else {
+    df[row, "SEXE"] <- "F"
+  }
+}
+
+print(df$SEXE)
+end <- Sys.time()
+time_loop <- difftime(end, start, units="secs")
+time_loop
+```
+
+```{r}
+##### Avec ifelse
+
+df <- openxlsx::read.xlsx("../Sources/vico2020.xlsx", colNames = TRUE)
+start <- Sys.time()
+
+ifelse(df$SEXE == "Un homme", "H", "F")
+
+end <- Sys.time()
+time_no_loop <- difftime(end, start, units="secs")
+print(time_no_loop)
+
+time_loop - time_no_loop
+```
+
+On voit donc l'écarte de temps, qui reste très petit dans notre cas, mais qui peut vite être une gêne dans les processus.
+Nous avons également utiliser les opérateur `if` et `else`, que je vais maintenant détailler.
+
+## Conditions
+
+Une condition ne s'utilise pas nécessairement dans une boucle, et elle permet de tester, de la même manière que ifelse, une condition dans notre algorithme :
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+if ("Chat" %in% ZOO) {
+  print("Je vais aller au Zoo")
+}
+```
+On peut ainsi, de la même manière que les conditions entre `[]`, sélectionner des informations par conditions. Les conditions sous la forme de `if` sont particulièrement intéressante dans le cas des boucles parce qu'elles nous permettent de faire des actions conditionnelles. Reprenons notre variable ZOO.
+
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+for (animal in ZOO) {
+  print(animal)
+  ZOO[ZOO == animal] <- paste(animal, "Vu")
+  print(ZOO)
+}
+```
+Maintenant que nous avons vu tous les animaux du ZOO, le zoo a décidé d'inclure 2 nouveaux specimens, un requin (et oui) et un canard
+
+```{r}
+ZOO <- append(ZOO, c("Requin", "Canard"))
+ZOO <- sort(ZOO)
+ZOO
+```
+
+En plus, la direction du zoo a changé l'ordre de visite et l'a trié dans l'ordre alphabétique. Pour notre prochaine visite, nous souhaitons aller seulement aux animaux que nous n'avons pas encore vu. 
+
+```{r}
+non_vu <- c("Requin", "Canard")
+
+for (animal in ZOO) {
+  if (animal %in% non_vu) {
+    sprintf("Je n'avais jamais vu le %s", animal) %>% print()    ### sprintf() permet de donner des variables dans un chaîne de caratère
+  } else {
+    sprintf("Jai déjà vu le %s", animal) %>% print()
+    next
+  }
+}
+```
+En utilisant les arguments `if` et `else`, on peut donc conditionner les actions que l'on souhaite réaliser au sein d'une boucle. L'argument `next` nous permet de passer à l'itération suivante, ce qui est pratique si l'on ne souhaite pas réaliser d'actions particulières sur un élément de notre boucle. 
+
+```{r}
+for (i in 1:10) {
+  if (i%%2 == 0) {   ##### Le signe '%%' signifie le 'modulo', c'est-à-dire le résidu de la division entière. 
+    next             ##### Dans notre cas, cela permet de vérifier si i est pair ou impair.
+  } else {
+    print(i)
+  }
+}
+```
+En plus de `if` et de `else`, on peut également utiliser `else if` qui permet de donner une condition supplémentaire si le premier `if` n'est pas suffisant. 
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+ZOO <- append(ZOO, c("Requin", "Canard"))
+
+for (animal in ZOO) {
+  if (animal == "Chat" | animal == "Chien") {
+    print("animaux d'appartement")
+  } else if (animal %in% c("perroquet", "Canard", "pivert")) {
+    print("animaux volant")
+  } else {
+    print("Autres animaux")
+  }
+}
+```
+IL est important de ne pas répéter trop de `if` ou de `else if`. Si c'est le cas, on parle de "forêt de if", ce qui n'est jamais bon signe. Soit vous n'avez pas suffisamment sélectionner vos données en amont, soit vous n'avez pas bien écrit vos conditions. Dans tous les cas, cela augmente assez rapidement la durée de calcul de vos algorithmes. 
+
+
+On peut assez facilement penser que tout est plus simple avec des boucles et des conditions, mais en plus du temps de calcul qui est rallongée, créer trop de boucles pour faire les mêmes opérations allonge sensiblement l'écriture du code et complique la lisibilité. Si vous avez besoin de la même boucle, vous pouvez également créer des fonctions que l'on peut utiliser dans divers contexte pour faire les mêmes opérations. 
+
+## Fonctions
+
+Les fonctions sont les outils du programmeur ou du staticien dans notre cas. Vous en avez déjà utilisez un certain nombre si vous êtes arrivé jusqu'ici. On remarque une structure particulière : 
+
+* Une fonction porte un nom, c'est évident, mais c'est très important, notamment quand vous créérez vos propres fonctions. 
+* Elle prend des arguments, en quantité finie, qui sont définies à la construction de la fonction. 
+* Elle retourne des résultats.
+
+De la même manière que `for` la structure d'une fonction peut ressemble à ceci :
+
+```{r, eval=FALSE}
+ceci_est_une_fonction <- function(x) {
+  On peut faire pleins d'opérations,
+  x %>%
+    select(...)
+  for (...) {
+    faire des trucs
+  }
+  ...
+  
+  return()    ### A la fin d'une fonction, on peut retourner des valeurs ou non.
+}
+```
+
+Voici ci-dessous un exemple fonctionnel de fonction.
+
+```{r, error=TRUE}
+une_fonction <- function(x=NULL, arg1=NULL, arg2=NULL) {
+  if (!is.null(x) & !is.null(arg1) & !is.null(arg2)) {
+    print(paste(x, arg1, arg2))
+  } else {
+    print("Vous n'avez pas donner tous les arguments")
+  }
+}
+une_fonction()
+une_fonction(x="Wah une fonction !", arg1="Elle est ", arg2 = "incroyable")
+```
+
+Nous avons ici fait pleins de choses qui sont des mécaniques essentielles : 
+
+* Nous avons créer une fonction appelé "une_fonction" (quelle originalité !)
+* Nous avons choisi qu'elle aurait 3 arguments : x, arg1 et arg2
+* Nous avons **instancié** toutes ces variables (ou assigné) la valeur `NULL`
+* Nous faisons un test de condition pour savoir si nous avons effectivement donner une autre valeur à nos arguments. 
+
+On peut des choses autrements plus intéressante avec une fonction. Retournons de nouveau au ZOO : 
+
+```{r}
+Visite_ZOO <- function(ZOO, animaux_visité) { ### Cette fois nous n'avons pas instancié les arguments
+  for (animal in animaux_visité) {
+    if (animal %in% ZOO) {
+      ZOO[ZOO == animal] <- paste(animal, "Vu")
+    } else {
+      sprintf("%s n'est pas dans le ZOO", animal) %>% print()
+    }
+  }
+  return(ZOO)
+}
+
+Visite_ZOO(ZOO, c("Canard", "Chèvre"))
+
+```
+Ci-dessus nous avons fait une fonction qui permet d'ajouter "Vu" à un animal que nous avons vu au ZOO. Si l'animal que nous avons vu n'est pas au ZOO, la fonction nous préviens. 
+On peut remarquer 2 choses : 
+
+* Nous utilisons la fonction `return()` qui permet de 'sortir' un élément de la fonction
+* Sans réassigner les résultats de la fonction, notre variable ZOO n'a pas changé. C'est parce que les variables qui sont au sein de la variable lui sont réservées. La variable ZOO que nous avons nommé pour notre variable n'a rien à voir avec notre variable ZOO définie ailleurs. Par exemple :
+
+```{r}
+
+Visite_ZOO <- function(ZOO_de_lyon, animaux_visité) { ### Cette fois nous n'avons pas instancié les arguments
+  for (animal in animaux_visité) {
+    if (animal %in% ZOO_de_lyon) {
+      ZOO_de_lyon[ZOO_de_lyon == animal] <- paste(animal, "Vu")
+    } else {
+      sprintf("%s n'est pas dans le ZOO", animal) %>% print()
+    }
+  }
+  return(ZOO_de_lyon)
+}
+
+Visite_ZOO(ZOO, c("Canard", "Chèvre"))
+
+```
+On voit que cela renvoit exactement les mêmes résultats. Par convention, on nomme plus souvent les variables à l'intérieur d'une fonction avec des lettres comme 'x', ou 'y', mais il peut être important de signifier une variable avec un nom évocateur.
+
+## Exercices
+
+Nous ferons les exercices suivants à partir du jeu de données VICO que nous avons utilisé jusqu'à présent
+
+```{r, results='hide'}
+df <- read.xlsx("../Sources/vico2020.xlsx")
+tibble(df) %>% 
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+```
+
+```{r, echo=FALSE, results='hide'}
+tmp <- table(df$PCS_rec6, df$REV) %>%
+  as.data.frame() %>% 
+  pivot_wider(names_from = Var1, values_from = Freq)
+
+colnames <- tmp %>% 
+  select(-Var2) %>% colnames()
+
+Tot <- c("Total")
+for (col in colnames) {
+  Tot <- append(Tot, sum(tmp[col]))
+}
+
+tmp
+
+tmp$Var2 <- as.character(tmp$Var2)
+
+
+tmp <- rbind(tmp, Tot)
+
+
+for (col in colnames) {
+  tmp[col] <- as.double(tmp[[col]])
+}
+
+tmp$Tot_C <- tmp %>% 
+  select(-Var2) %>% 
+  rowSums()
+
+tmp %>% relocate(Tot_C, .before = `Agriculteurs, agricultrices`) %>% arrange(desc(Tot_C))
+```
+
+

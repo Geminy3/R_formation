@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+<head>
+
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>2 Premier recodage | Introduction au recodage avec R</title>
+  <meta name="description" content="Guide pour apprendre le recodage avec R, à l’attention des débutants, et des plus à l’aise" />
+  <meta name="generator" content="bookdown 0.29 and GitBook 2.6.7" />
+
+  <meta property="og:title" content="2 Premier recodage | Introduction au recodage avec R" />
+  <meta property="og:type" content="book" />
+  
+  <meta property="og:description" content="Guide pour apprendre le recodage avec R, à l’attention des débutants, et des plus à l’aise" />
+  <meta name="github-repo" content="true" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="2 Premier recodage | Introduction au recodage avec R" />
+  
+  <meta name="twitter:description" content="Guide pour apprendre le recodage avec R, à l’attention des débutants, et des plus à l’aise" />
+  
+
+<meta name="author" content="Aljoscha Massein" />
+
+
+
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  
+  
+<link rel="prev" href="importer-des-jeux-de-données.html"/>
+<link rel="next" href="recoder-des-variables-quantitatives.html"/>
+<script src="libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6/dist/fuse.min.js"></script>
+<link href="libs/gitbook-2.6.7/css/style.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-table.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-bookdown.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-highlight.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-search.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-fontsettings.css" rel="stylesheet" />
+<link href="libs/gitbook-2.6.7/css/plugin-clipboard.css" rel="stylesheet" />
+
+
+
+
+
+
+
+
+<link href="libs/anchor-sections-1.1.0/anchor-sections.css" rel="stylesheet" />
+<link href="libs/anchor-sections-1.1.0/anchor-sections-hash.css" rel="stylesheet" />
+<script src="libs/anchor-sections-1.1.0/anchor-sections.js"></script>
+<script src="libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+<link href="libs/bsTable-3.3.7/bootstrapTable.min.css" rel="stylesheet" />
+<script src="libs/bsTable-3.3.7/bootstrapTable.js"></script>
+
+
+<style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+</head>
+
+<body>
+
+
+
+  <div class="book without-animation with-summary font-size-2 font-family-1" data-basepath=".">
+
+    <div class="book-summary">
+      <nav role="navigation">
+
+<ul class="summary">
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html"><i class="fa fa-check"></i>Introduction</a>
+<ul>
+<li class="chapter" data-level="" data-path="index.html"><a href="index.html#formation-au-recodage-de-données"><i class="fa fa-check"></i>Formation au recodage de données</a></li>
+</ul></li>
+<li class="chapter" data-level="1" data-path="importer-des-jeux-de-données.html"><a href="importer-des-jeux-de-données.html"><i class="fa fa-check"></i><b>1</b> Importer des jeux de données</a></li>
+<li class="chapter" data-level="2" data-path="premier-recodage.html"><a href="premier-recodage.html"><i class="fa fa-check"></i><b>2</b> Premier recodage</a>
+<ul>
+<li class="chapter" data-level="2.1" data-path="premier-recodage.html"><a href="premier-recodage.html#recoder-des-modalités"><i class="fa fa-check"></i><b>2.1</b> Recoder des modalités</a>
+<ul>
+<li class="chapter" data-level="2.1.1" data-path="premier-recodage.html"><a href="premier-recodage.html#ifelse"><i class="fa fa-check"></i><b>2.1.1</b> ifelse</a></li>
+<li class="chapter" data-level="2.1.2" data-path="premier-recodage.html"><a href="premier-recodage.html#case_when"><i class="fa fa-check"></i><b>2.1.2</b> case_when</a></li>
+</ul></li>
+</ul></li>
+<li class="chapter" data-level="3" data-path="recoder-des-variables-quantitatives.html"><a href="recoder-des-variables-quantitatives.html"><i class="fa fa-check"></i><b>3</b> Recoder des variables quantitatives</a>
+<ul>
+<li class="chapter" data-level="3.1" data-path="recoder-des-variables-quantitatives.html"><a href="recoder-des-variables-quantitatives.html#tests-et-condition"><i class="fa fa-check"></i><b>3.1</b> Tests et condition</a></li>
+<li class="chapter" data-level="3.2" data-path="recoder-des-variables-quantitatives.html"><a href="recoder-des-variables-quantitatives.html#exercices"><i class="fa fa-check"></i><b>3.2</b> Exercices</a></li>
+</ul></li>
+<li class="chapter" data-level="4" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html"><i class="fa fa-check"></i><b>4</b> Sélectionner l’information avec dplyr</a>
+<ul>
+<li class="chapter" data-level="4.1" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#select-et-filter"><i class="fa fa-check"></i><b>4.1</b> select() et filter()</a></li>
+<li class="chapter" data-level="4.2" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#arrange-count"><i class="fa fa-check"></i><b>4.2</b> arrange() &amp; count()</a></li>
+<li class="chapter" data-level="4.3" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#mutate-groupby"><i class="fa fa-check"></i><b>4.3</b> Mutate() &amp; groupby()</a></li>
+<li class="chapter" data-level="4.4" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#what-the-pipe"><i class="fa fa-check"></i><b>4.4</b> What %&gt;% the %&gt;% pipe</a></li>
+<li class="chapter" data-level="4.5" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#summarise"><i class="fa fa-check"></i><b>4.5</b> summarise()</a></li>
+<li class="chapter" data-level="4.6" data-path="sélectionner-linformation-avec-dplyr.html"><a href="sélectionner-linformation-avec-dplyr.html#exercices-1"><i class="fa fa-check"></i><b>4.6</b> Exercices :</a></li>
+</ul></li>
+<li class="chapter" data-level="5" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html"><i class="fa fa-check"></i><b>5</b> Boucles, fonctions et conditions</a>
+<ul>
+<li class="chapter" data-level="5.1" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#boucles"><i class="fa fa-check"></i><b>5.1</b> Boucles</a></li>
+<li class="chapter" data-level="5.2" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#conditions"><i class="fa fa-check"></i><b>5.2</b> Conditions</a></li>
+<li class="chapter" data-level="5.3" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#fonctions"><i class="fa fa-check"></i><b>5.3</b> Fonctions</a></li>
+<li class="chapter" data-level="5.4" data-path="boucles-fonctions-et-conditions.html"><a href="boucles-fonctions-et-conditions.html#exercices-2"><i class="fa fa-check"></i><b>5.4</b> Exercices</a></li>
+</ul></li>
+</ul>
+
+      </nav>
+    </div>
+
+    <div class="book-body">
+      <div class="body-inner">
+        <div class="book-header" role="navigation">
+          <h1>
+            <i class="fa fa-circle-o-notch fa-spin"></i><a href="./">Introduction au recodage avec R</a>
+          </h1>
+        </div>
+
+        <div class="page-wrapper" tabindex="-1" role="main">
+          <div class="page-inner">
+
+            <section class="normal" id="section-">
+<div id="premier-recodage" class="section level1 hasAnchor" number="2">
+<h1><span class="header-section-number">2</span> Premier recodage<a href="premier-recodage.html#premier-recodage" class="anchor-section" aria-label="Anchor link to header"></a></h1>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="premier-recodage.html#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">typeof</span>(df<span class="sc">$</span>AGE))</span></code></pre></div>
+<pre><code>## [1] &quot;double&quot;</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="premier-recodage.html#cb11-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>AGE <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(df<span class="sc">$</span>AGE)</span>
+<span id="cb11-2"><a href="premier-recodage.html#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">typeof</span>(df<span class="sc">$</span>AGE)</span></code></pre></div>
+<pre><code>## [1] &quot;integer&quot;</code></pre>
+<p>Que se passe-t-il dans ce chunk ?</p>
+<p>D’abord, on affiche le type de la variable AGE. On utilise la fonction <code>print()</code> qui affiche un résultat, dans laquelle on demande le type de la variable AGE grâce à la fonction (très utile) <code>typeof</code>. Pour sélectionner une colonne, ou une variable de notre tableau <code>df</code>, nous utilisons l’opérateur <code>$</code>.</p>
+<p>Observons la ligne suivante :</p>
+<p><code>df$AGE &lt;- as.integer(df$AGE)</code></p>
+<p>On utilise ici la flèche <code>&lt;-</code> d’assignation, qui permet de donner une valeur à un objet. Ici on attribue à la variable <code>df$AGE</code> une nouvelle valeur. En l’occurence, on lui assigne la variable <code>df$AGE</code>, mais au format “integer” grâce à la fonction <code>as.integer()</code>, comme on peut l’observer avec les résultats de la ligne suivante.</p>
+<p>Nous venons ici d’effectuer notre première opération de recodage. Félicitations !</p>
+<p>En plus de l’opérateur <code>$</code>, on pourrait également sélectionner une colonne en utilisant les <code>[]</code>, et nous verrons plus tard que cela est très pratique.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="premier-recodage.html#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">head</span>(df[<span class="st">&#39;AGE&#39;</span>]))</span>
+<span id="cb13-2"><a href="premier-recodage.html#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">head</span>(df<span class="sc">$</span>AGE))</span></code></pre></div>
+<pre><code>##   AGE
+## 1  30
+## 2  30
+## 3  24
+## 4  45
+## 5  57
+## 6  35</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="right">AGE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="right">30</td>
+</tr>
+<tr class="even">
+<td align="right">30</td>
+</tr>
+<tr class="odd">
+<td align="right">24</td>
+</tr>
+<tr class="even">
+<td align="right">45</td>
+</tr>
+<tr class="odd">
+<td align="right">57</td>
+</tr>
+<tr class="even">
+<td align="right">35</td>
+</tr>
+</tbody>
+</table>
+<pre><code>## [1] 30 30 24 45 57 35</code></pre>
+<p>On note que les sorties ne sont pas exactement les mêmes. <code>df$AGE</code> renvoit ce qu’on appelle un <strong>vecteur</strong>, c’est à dire un ensemble d’observations qui s’écrit sous la forme :</p>
+<p><code>variable &lt;- c(1, 2, 3, 4, 5, 6)</code></p>
+<p><code>df['AGE']</code> renvoit pour sa part une liste, qui est plus proche d’un tableau de données.</p>
+<div id="recoder-des-modalités" class="section level2 hasAnchor" number="2.1">
+<h2><span class="header-section-number">2.1</span> Recoder des modalités<a href="premier-recodage.html#recoder-des-modalités" class="anchor-section" aria-label="Anchor link to header"></a></h2>
+<p>Transformer le type des variables peut être très utile dans certains cas, mais ce n’est pas la première chose qui nous intéresse ici. On voudrait plus recoder la variable <code>SEXE</code> pour que les modalités soient plus courtes.
+Voici notre plan de recodage :</p>
+<ul>
+<li>“Un homme” doit être recoder en “H”</li>
+<li>“Une femme”, doit être recoder en “F”</li>
+</ul>
+<p>Voici le bout de code que nous pouvons utiliser :</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="premier-recodage.html#cb16-1" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>SEXE_reco[df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Un homme&quot;</span>] <span class="ot">&lt;-</span> <span class="st">&quot;H&quot;</span></span>
+<span id="cb16-2"><a href="premier-recodage.html#cb16-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>SEXE_reco[df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Une femme&quot;</span>] <span class="ot">&lt;-</span> <span class="st">&quot;F&quot;</span></span>
+<span id="cb16-3"><a href="premier-recodage.html#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(df<span class="sc">$</span>SEXE_reco)</span></code></pre></div>
+<pre><code>## [1] &quot;F&quot; &quot;H&quot;</code></pre>
+<p>Décrivons ce bout de code :</p>
+<p>La première ligne <code>df$SEXE[df$SEXE == "Un homme"] &lt;- "H"</code> peut être décortiquée en plusieurs parties :</p>
+<ul>
+<li>On sélectionne d’abord la variable que l’on souhaite recoder avec <code>df$SEXE</code>.</li>
+<li>On veut choisir uniquement certains individus de cette variable. On sélectionne donc au sein de la variable <code>SEXE</code> avec les crochets <code>[]</code> qui nous permettent de donner des <strong>conditions</strong>.</li>
+<li>On fournit ensuite la condition de sélection au sein des crochets. Ici la condition prend cette forme <code>df$SEXE == "Un homme"</code>.</li>
+<li>La condition peut se lire : “Pour les modalités ‘Un homme’ de la variable SEXE”</li>
+<li>On attribue ensuite la valeur “H” à tous les individus qui correspondent à notre condition</li>
+</ul>
+<p>On remarque l’utilisation de l’opérateur <code>==</code>. Il existe une variété d’opérateur qui permettent de tester de l’information. Voici les différents types d’<strong>opérateurs de comparaisons</strong>:</p>
+<ul>
+<li><code>==</code> pour les tests d’égalités (à na pas confondre à <code>=</code>le égal simple qui attribue de la même manière que la flèche <code>&lt;-</code>)</li>
+<li><code>!=</code> pour les tests de différences (renvoie “VRAI” quand les éléments sont différents)</li>
+<li><code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code> pour test l’infériorité ou la supériorité de deux éléments</li>
+<li><code>%in%</code> pour tester la présence d’un ou plusieurs objets dans un autre.</li>
+</ul>
+<p>Après avoir appliqué la même opération pour la modalité “Une femme”, on regarde si notre recodage a fonctionne. En utilisant la fonction <code>unique()</code> on peut regarder toutes les valeurs uniques que prennent les modalités d’une variable.</p>
+<p>Cette manière de recoder est assez “old-school”, et il existe des méthodes beaucoup plus simple pour recoder des modalités d’une variable. En particulier les fonctions <code>ifelse</code> et <code>case_when</code>.</p>
+<div id="ifelse" class="section level3 hasAnchor" number="2.1.1">
+<h3><span class="header-section-number">2.1.1</span> ifelse<a href="premier-recodage.html#ifelse" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>ifelse est une fonction intégré à R qui permet de poser une condition et de renvoyer :</p>
+<ul>
+<li>un résultat si la condition est vraie</li>
+<li>un résultat si la condition est fausse</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="premier-recodage.html#cb18-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> openxlsx<span class="sc">::</span><span class="fu">read.xlsx</span>(<span class="st">&quot;../Sources/vico2020.xlsx&quot;</span>, <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb18-2"><a href="premier-recodage.html#cb18-2" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>SEXE_reco <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Un homme&quot;</span>, <span class="st">&quot;H&quot;</span>, <span class="st">&quot;F&quot;</span>)</span>
+<span id="cb18-3"><a href="premier-recodage.html#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(df<span class="sc">$</span>SEXE_reco)</span></code></pre></div>
+<pre><code>## [1] &quot;F&quot; &quot;H&quot;</code></pre>
+<p>ifelse permet ainsi de recoder une variable binaire, c’est-à-dire qui n’a que deux modalités (H/F, Oui/Non, Vrai/faux,…)</p>
+<p>Case_when permet d’élargir le nombre de conditions.</p>
+</div>
+<div id="case_when" class="section level3 hasAnchor" number="2.1.2">
+<h3><span class="header-section-number">2.1.2</span> case_when<a href="premier-recodage.html#case_when" class="anchor-section" aria-label="Anchor link to header"></a></h3>
+<p>Case_when, comme son nom l’indique, permet de recoder une modalité en fonction d’une condition. L’avantage, c’est qu’on peut lui donner autant de condition qu’on veut.
+Pour utiliser cette fonction, il faut installer et charger la <strong>librairie dplyr</strong>, qui fait partie de l’ensemble du <strong>tidyverse</strong>.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="premier-recodage.html#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="premier-recodage.html#cb21-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> openxlsx<span class="sc">::</span><span class="fu">read.xlsx</span>(<span class="st">&quot;../Sources/vico2020.xlsx&quot;</span>, <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb21-2"><a href="premier-recodage.html#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="premier-recodage.html#cb21-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>SEXE_reco <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">case_when</span>(</span>
+<span id="cb21-4"><a href="premier-recodage.html#cb21-4" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Un homme&quot;</span> <span class="sc">~</span> <span class="st">&quot;H&quot;</span>,</span>
+<span id="cb21-5"><a href="premier-recodage.html#cb21-5" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Une femme&quot;</span> <span class="sc">~</span> <span class="st">&quot;F&quot;</span></span>
+<span id="cb21-6"><a href="premier-recodage.html#cb21-6" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb21-7"><a href="premier-recodage.html#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(df<span class="sc">$</span>SEXE_reco)</span></code></pre></div>
+<pre><code>## [1] &quot;F&quot; &quot;H&quot;</code></pre>
+<p>On peut indiquer autant de conditions que l’on souhaite, par exemple si on souhaite créer une catégorie pour les hommes et femmes de plus de 60 ans.</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="premier-recodage.html#cb23-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> openxlsx<span class="sc">::</span><span class="fu">read.xlsx</span>(<span class="st">&quot;../Sources/vico2020.xlsx&quot;</span>, <span class="at">colNames =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb23-2"><a href="premier-recodage.html#cb23-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-3"><a href="premier-recodage.html#cb23-3" aria-hidden="true" tabindex="-1"></a>df<span class="sc">$</span>SEXE_reco <span class="ot">&lt;-</span> <span class="fu">case_when</span>(</span>
+<span id="cb23-4"><a href="premier-recodage.html#cb23-4" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Un homme&quot;</span> <span class="sc">&amp;</span> df<span class="sc">$</span>AGE <span class="sc">&gt;</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">&quot;H+60&quot;</span>,</span>
+<span id="cb23-5"><a href="premier-recodage.html#cb23-5" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Une femme&quot;</span> <span class="sc">&amp;</span> df<span class="sc">$</span>AGE <span class="sc">&gt;</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">&quot;F+60&quot;</span>,</span>
+<span id="cb23-6"><a href="premier-recodage.html#cb23-6" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Un homme&quot;</span> <span class="sc">~</span> <span class="st">&quot;H-60&quot;</span>,</span>
+<span id="cb23-7"><a href="premier-recodage.html#cb23-7" aria-hidden="true" tabindex="-1"></a>  df<span class="sc">$</span>SEXE <span class="sc">==</span> <span class="st">&quot;Une femme&quot;</span> <span class="sc">~</span> <span class="st">&quot;f-60&quot;</span>,</span>
+<span id="cb23-8"><a href="premier-recodage.html#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;Autre&quot;</span></span>
+<span id="cb23-9"><a href="premier-recodage.html#cb23-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb23-10"><a href="premier-recodage.html#cb23-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-11"><a href="premier-recodage.html#cb23-11" aria-hidden="true" tabindex="-1"></a>questionr<span class="sc">::</span><span class="fu">freq</span>(df<span class="sc">$</span>SEXE_reco, <span class="at">cum=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left"></th>
+<th align="right">n</th>
+<th align="right">%</th>
+<th align="right">val%</th>
+<th align="right">%cum</th>
+<th align="right">val%cum</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">f-60</td>
+<td align="right">1257</td>
+<td align="right">62.8</td>
+<td align="right">62.8</td>
+<td align="right">62.8</td>
+<td align="right">62.8</td>
+</tr>
+<tr class="even">
+<td align="left">F+60</td>
+<td align="right">205</td>
+<td align="right">10.2</td>
+<td align="right">10.2</td>
+<td align="right">73.1</td>
+<td align="right">73.1</td>
+</tr>
+<tr class="odd">
+<td align="left">H-60</td>
+<td align="right">404</td>
+<td align="right">20.2</td>
+<td align="right">20.2</td>
+<td align="right">93.3</td>
+<td align="right">93.3</td>
+</tr>
+<tr class="even">
+<td align="left">H+60</td>
+<td align="right">134</td>
+<td align="right">6.7</td>
+<td align="right">6.7</td>
+<td align="right">100.0</td>
+<td align="right">100.0</td>
+</tr>
+</tbody>
+</table>
+<p>Une particularité de case_when est qu’il faut toujours indiquer les conditions les plus spécifiques en première, sinon le recodage ne fonctionne pas. Un peu comme si une fois la variable recodée, la condition ne sélectionne plus les individus traités. Ce qui permet également de faire des raccourcis, même si cette syntaxe n’est pas forcément conseillé pour la lisbilité de votre code. C’est pour ces raison que la ligne <code>df$SEXE == "Un homme" ~ "H-60"</code> ne recode pas toutes les modalités “Un homme”.</p>
+<p>Enfin, la ligne <code>TRUE ~ "Autre"</code> permet d’assigner la valeur “Autre” pour les individus qui ne correspondent à aucune des conditions que vous donnez à case_when().</p>
+<p>Nous utilisons ici la fonction <code>freq()</code> de la librairie <code>questionR</code> pour afficher les pourcentages et les effectifs pour chaque modalité.</p>
+
+</div>
+</div>
+</div>
+            </section>
+
+          </div>
+        </div>
+      </div>
+<a href="importer-des-jeux-de-données.html" class="navigation navigation-prev " aria-label="Previous page"><i class="fa fa-angle-left"></i></a>
+<a href="recoder-des-variables-quantitatives.html" class="navigation navigation-next " aria-label="Next page"><i class="fa fa-angle-right"></i></a>
+    </div>
+  </div>
+<script src="libs/gitbook-2.6.7/js/app.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/clipboard.min.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-search.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-sharing.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-fontsettings.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-bookdown.js"></script>
+<script src="libs/gitbook-2.6.7/js/jquery.highlight.js"></script>
+<script src="libs/gitbook-2.6.7/js/plugin-clipboard.js"></script>
+<script>
+gitbook.require(["gitbook"], function(gitbook) {
+gitbook.start({
+"sharing": {
+"github": false,
+"facebook": true,
+"twitter": true,
+"linkedin": false,
+"weibo": false,
+"instapaper": false,
+"vk": false,
+"whatsapp": false,
+"all": ["facebook", "twitter", "linkedin", "weibo", "instapaper"]
+},
+"fontsettings": {
+"theme": "white",
+"family": "sans",
+"size": 2
+},
+"edit": {
+"link": null,
+"text": null
+},
+"history": {
+"link": null,
+"text": null
+},
+"view": {
+"link": null,
+"text": null
+},
+"download": null,
+"search": {
+"engine": "fuse",
+"options": null
+},
+"toc": {
+"collapse": "subsection"
+}
+});
+});
+</script>
+
+</body>
+
+</html>

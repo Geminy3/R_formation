@@ -1,0 +1,1025 @@
+---
+title: "1. Recodage"
+author: "Alioscha_Massein"
+date: "2022-11-29"
+output: 
+  html_document:
+    toc : TRUE
+    theme : united
+    #name : "1. Recodage"
+---
+
+```{r setup, include=FALSE, error=TRUE, warning=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Formation au recodage de données
+
+Le **recodage de données** est particulièrement important à l'issue de la passation d'un questionnaire. En fonctions des réponses, on peut avoir plusieurs questions qui se posent :
+
+* Certaines variables numériques peuvent-être regroupés dans des catégories
+* Certaines individus peuvent être regroupés au sein d'une même catégorie, notamment pour éviter les modalités avec trop peu d'individus
+* Le format des variables n'est pas forcément le plus pratique pour étudier une variable
+* Certaines questions ont très peu de réponses, on peut éventuellement les supprimer de notre jeu de données
+* Et tout un ensemble de questions qui sont propres à votre objet d'étude. 
+
+Le recodage de vos jeux de données est donc une étape importante de votre travail statistique : c'est avant tout un processus de sélection, de transformation, de modification de l'information des réponses, en "données" exploitables.
+Mais avant d'entrer dans le vif du sujet du recodage, il nous faut d'abord voir quelques bases du fonctionnement de R, et de Rstudio.
+
+## Importer des jeux de données
+
+Pour manipuler des données, il nous faut d'abord savoir importer des jeux de données. L'importation dépend en grande partie du format de votre jeu de données : yyy.csv, yyy.xlsx, yyy.xls, yyy.number,...
+Le format de vos données vont nécessiter l'utilisation d'une méthode plutôt qu'un autre.
+Prenons l'exemple d'un fichier excel tout à fait classique : il faut, en premier lieu, importer une librairie dans R afin de pouvoir utiliser des fonctions d'imports.
+
+```{r, results='hide'}
+library(openxlsx) ### Librairie pour l'import de fichier excel
+library(tidyverse) ### Librairie incontournable, mais nous y reviendrons
+library(questionr) ### QuestionR apporte un ensemble de fonctions et de données classique de R
+library(kableExtra)
+```
+
+<div class="alert alert-success" role="alert"> <b>Au sein d'un fichier markdown, vous écrivez des instructions dans des "chunks" comme ci-dessus</b>. Je vous laisse vous renseigner de votre côté sur le fonctionnement de Markdown, qui est très pratique pour créer des documents. Vous pouvez executer vos commande soit ligne par ligne (`CTRL + Entrée`), soit tout le chunk d'un coup (`CTRL + SHIFT + Entrée`). </div>
+
+Une fois nos librairies installées, on peut se lancer dans l'import de fichier. En particulier, la librairie openxlsx est très efficace dans l'import de fichier excel. Mais regardons pour elle est particulièrement efficace. Nous allons importer un fichier avec les fonctinonalités standards de R.
+
+```{r, results='asis'}
+df <- read.csv2("Sources/vico2020.xlsx", col.names = TRUE)
+```
+Décrivons rapidement ce bout de chunk. Nous créons une variable `df` dans laquelle nous souhaitons importer un fichier qui s'appelle `vico2020.xlsx`. Nous utilisons pour ce faire la fonction `read.csv2()`, à laquelle nous donnons un chemin **relatif** (mais on pourrait aussi lui fournir un chemin **absolu**) vers le fichier que nous voulons importer. En somme, au lieu de naviguer dans nos dossiers comme nous avons l'habiture, nous donnons un chemin à R pour charger le fichier. 
+
+Le chemin se lit de cette manière : 
+
+* `"../"` : Les ".." signifient que nous souhaitons revenir au dossier précédent par rapport à l'endroit où R se situe. Dans un chemin relatif (c'est-à-dire qui ne part pas de la racine de l'ordinateur), le `./` signifie "à l'endroit où nous sommes". 
+* Utiliser `TAB` : En utilisant la touche `TAB` après un '/', vous pourrez voir où R vous situe, et choisir à l'aide de la touche `Entrée`, les dossier et fichiers vers lesquelles vous souhaitez naviguer.
+* `/Aljoscha/Datas/vico2020.xlsx` : Ce sont l'ensemble des dossiers par lesquelles nous passons pour charger le fichier `vico2020.xlsx`
+
+Pour vérifier que nous avons bien récupérer notre fichier, et qu'il est correctement importé, nous utilisons ici la fonction head(), qui permet de montrer les premiers individus d'un tableau.
+
+Mais il semble ici que rien de ce que nous avons voulu faire n'est fonctionner. Nous obtenons un `Warning` de R, ce qui signifie que nous n'avons pas pu importer le jeu de données correctement. Nous pouvons réessayer cette même manipulation avec le package (ou librairie) `openxlsx`
+
+```{r, results='hide'}
+df <- openxlsx::read.xlsx("sources/vico2020.xlsx", colNames = TRUE)
+head(df)
+```
+```{r, echo=FALSE}
+kable(head(df)[,1:5], format="markdown")
+```
+
+Cette fois-ci, l'import a bien fonctionné. C'est pourquoi je ne vous recommanderais jamais assez d'utiliser la librairie `openxlsx` pour importer vos données au format excel. On remarque également que la fonction `head` nous affiche le nombre de lignes et de colonnes du tableau : ici il y a 6 individus et 20 variables `df[6 x 20]`. On peut bien sûr importer des données sous une grande variété de format, y compris celles issues de logiciel comme STATA, SAS ou encore SPSS. 
+
+Une fois notre jeu de données importé, nous pouvons regarder rapidement comment celui-ci est construit. Nous avons déjà vu la fonction `head()` qui permet d'observer les premiers lignes, voici plusieurs autres fonctions :
+
+```{r, results='hide'}
+tail(df)   ### Permet d'afficher les dernières lignes d'un tableau
+ncol(df)    ### Affiche le nombre de colonnes (variables)
+nrow(df)    ### Affiche le nombre de lignes (individus)
+dim(df)     ### Affiche les nombres de lignes et de colonnes
+names(df)   ### ou colnames(d) affiche les noms des colonnes (variables)
+```
+```{r}
+str(df)    ### Permet de voir les caractéristiques de chaque variable
+```
+
+Arrêtons-nous un peu sur la fonction str et ses résultats :
+
+* On remarque que les variables ont un **type**, ici `num` et `chr`. Pourquoi des types ? Parce que les variables d'un langage de programmation on souvent des propriétés particulières : on ne fait pas les mêmes traitements entre des nombres et des lettres, de la même manière qu'on ne fait pas les mêmes traitements entre des variables qualitatives et quantitatives.
+* Il existe une variété assez large de type de variable. Les `num`représentents les variables numériques, pas forcément des entiers, qui sont décrits par la variable `int`.
+* `chr` représente les variables de texte, sans plus de spécificités. On peut retrouver plusieurs type de ces variables comme les `factor`, qui permettent de regrouper des modalités sous un même nom, mais aussi `logical`,...
+
+Sans nous attarder sur les types - sur lesquels nous reviendrons - nous pouvons voir qu'a priori toutes les variables n'ont pas été importé de la meilleure des manières : des variables comme `AGE` devrait être une variable de type `int` puisque l'age ici n'est représenté que par des nombres entiers. La variable `SEXE` devrait être au format `factor`, et on pourrait recoder ses modalités. Regardons ça ici.
+
+## Premier recodage
+
+```{r}
+print(typeof(df$AGE))
+df$AGE <- as.integer(df$AGE)
+typeof(df$AGE)
+```
+Que se passe-t-il dans ce chunk ?
+
+D'abord, on affiche le type de la variable AGE. On utilise la fonction `print()` qui affiche un résultat, dans laquelle on demande le type de la variable AGE grâce à la fonction (très utile) `typeof`. Pour sélectionner une colonne, ou une variable de notre tableau `df`, nous utilisons l'opérateur `$`. 
+
+Observons la ligne suivante :
+
+`df$AGE <- as.integer(df$AGE)`
+
+On utilise ici la flèche `<-` d'assignation, qui permet de donner une valeur à un objet. Ici on attribue à la variable `df$AGE` une nouvelle valeur. En l'occurence, on lui assigne la variable `df$AGE`, mais au format "integer" grâce à la fonction `as.integer()`, comme on peut l'observer avec les résultats de la ligne suivante. 
+
+Nous venons ici d'effectuer notre première opération de recodage. Félicitations !
+
+En plus de l'opérateur `$`, on pourrait également sélectionner une colonne en utilisant les `[]`, et nous verrons plus tard que cela est très pratique.
+
+
+```{r, results='hide'}
+print(head(df['AGE']))
+print(head(df$AGE))
+```
+```{r, echo=FALSE}
+kable(print(head(df['AGE'])), format="markdown")
+print(head(df$AGE))
+```
+
+On note que les sorties ne sont pas exactement les mêmes. `df$AGE` renvoit ce qu'on appelle un **vecteur**, c'est à dire un ensemble d'observations qui s'écrit sous la forme :
+
+`variable <- c(1, 2, 3, 4, 5, 6)`
+
+`df['AGE']` renvoit pour sa part une liste, qui est plus proche d'un tableau de données.
+
+## Recoder des modalités
+
+Transformer le type des variables peut être très utile dans certains cas, mais ce n'est pas la première chose qui nous intéresse ici. On voudrait plus recoder la variable `SEXE` pour que les modalités soient plus courtes.
+Voici notre plan de recodage :
+
+* "Un homme" doit être recoder en "H"
+* "Une femme", doit être recoder en "F"
+
+Voici le bout de code que nous pouvons utiliser :
+
+```{r}
+df$SEXE_reco[df$SEXE == "Un homme"] <- "H"
+df$SEXE_reco[df$SEXE == "Une femme"] <- "F"
+unique(df$SEXE_reco)
+```
+Décrivons ce bout de code :
+
+La première ligne `df$SEXE[df$SEXE == "Un homme"] <- "H"` peut être décortiquée en plusieurs parties :
+
+* On sélectionne d'abord la variable que l'on souhaite recoder avec `df$SEXE`.
+* On veut choisir uniquement certains individus de cette variable. On sélectionne donc au sein de la variable `SEXE` avec les crochets `[]` qui nous permettent de donner des **conditions**.
+* On fournit ensuite la condition de sélection au sein des crochets. Ici la condition prend cette forme `df$SEXE == "Un homme"`.
+* La condition peut se lire : "Pour les modalités 'Un homme' de la variable SEXE"
+* On attribue ensuite la valeur "H" à tous les individus qui correspondent à notre condition
+
+On remarque l'utilisation de l'opérateur `==`. Il existe une variété d'opérateur qui permettent de tester de l'information. Voici les différents types d'**opérateurs de comparaisons**:
+
+* `==` pour les tests d'égalités (à na pas confondre à `=`le égal simple qui attribue de la même manière que la flèche `<-`)
+* `!=` pour les tests de différences (renvoie "VRAI" quand les éléments sont différents)
+* `>`, `>=`, `<`, `<=` pour test l'infériorité ou la supériorité de deux éléments
+* `%in%` pour tester la présence d'un ou plusieurs objets dans un autre.
+
+Après avoir appliqué la même opération pour la modalité "Une femme", on regarde si notre recodage a fonctionne. En utilisant la fonction `unique()` on peut regarder toutes les valeurs uniques que prennent les modalités d'une variable.
+
+
+Cette manière de recoder est assez "old-school", et il existe des méthodes beaucoup plus simple pour recoder des modalités d'une variable. En particulier les fonctions `ifelse` et `case_when`.
+
+### ifelse
+
+ifelse est une fonction intégré à R qui permet de poser une condition et de renvoyer :
+
+* un résultat si la condition est vraie
+* un résultat si la condition est fausse 
+
+```{r}
+df <- openxlsx::read.xlsx("Sources/vico2020.xlsx", colNames = TRUE)
+df$SEXE_reco <- ifelse(df$SEXE == "Un homme", "H", "F")
+unique(df$SEXE_reco)
+```
+ifelse permet ainsi de recoder une variable binaire, c'est-à-dire qui n'a que deux modalités (H/F, Oui/Non, Vrai/faux,...)
+
+Case_when permet d'élargir le nombre de conditions. 
+
+### case_when
+
+Case_when, comme son nom l'indique, permet de recoder une modalité en fonction d'une condition. L'avantage, c'est qu'on peut lui donner autant de condition qu'on veut. 
+Pour utiliser cette fonction, il faut installer et charger la **librairie dplyr**, qui fait partie de l'ensemble du **tidyverse**.
+
+```{r, results='hide'}
+library(dplyr)
+```
+```{r}
+df <- openxlsx::read.xlsx("Sources/vico2020.xlsx", colNames = TRUE)
+
+df$SEXE_reco <- dplyr::case_when(
+  df$SEXE == "Un homme" ~ "H",
+  df$SEXE == "Une femme" ~ "F"
+)
+unique(df$SEXE_reco)
+```
+On peut indiquer autant de conditions que l'on souhaite, par exemple si on souhaite créer une catégorie pour les hommes et femmes de plus de 60 ans.
+
+```{r, results='hide'}
+df <- openxlsx::read.xlsx("Sources/vico2020.xlsx", colNames = TRUE)
+
+df$SEXE_reco <- case_when(
+  df$SEXE == "Un homme" & df$AGE > 60 ~ "H+60",
+  df$SEXE == "Une femme" & df$AGE > 60 ~ "F+60",
+  df$SEXE == "Un homme" ~ "H-60",
+  df$SEXE == "Une femme" ~ "f-60",
+  TRUE ~ "Autre"
+)
+
+questionr::freq(df$SEXE_reco, cum=TRUE)
+```
+```{r, echo=FALSE}
+kable(questionr::freq(df$SEXE_reco, cum=TRUE), format="markdown")
+```
+
+Une particularité de case_when est qu'il faut toujours indiquer les conditions les plus spécifiques en première, sinon le recodage ne fonctionne pas. Un peu comme si une fois la variable recodée, la condition ne sélectionne plus les individus traités. Ce qui permet également de faire des raccourcis, même si cette syntaxe n'est pas forcément conseillé pour la lisbilité de votre code. C'est pour ces raison que la ligne `df$SEXE == "Un homme" ~ "H-60"` ne recode pas toutes les modalités "Un homme". 
+
+Enfin, la ligne `TRUE ~ "Autre"` permet d'assigner la valeur "Autre" pour les individus qui ne correspondent à aucune des conditions que vous donnez à case_when(). 
+
+Nous utilisons ici la fonction `freq()` de la librairie `questionR` pour afficher les pourcentages et les effectifs pour chaque modalité.
+
+## Recoder des variables quantitatives
+
+De la même manière que l'on peut recoder des variables qualitatives, on peut découper des variables quantitatives en groupe, par exemple si l'on souhaite regrouper tous les individus entre 18-25 ans,...
+
+Pour cette opération, nous utilisons la fonction `cut` qui permet de donner soit un nombre de classe, soit des vecteurs de tranche numérique, par exemple `c(0, 18, 25, ...)`
+
+```{r}
+df$AGEclasse <- cut(df$AGE, breaks = 5) ### On ne garde que 5 
+freq(df$AGEclasse)
+```
+
+On peut essayer la même fonction en assignant un vecteur avec nos classes d'âge :
+
+```{r}
+df$AGEclasse <- cut(df$AGE, breaks = c(0, 18, 25, 40, 60, 80))
+freq(df$AGEclasse)
+```
+
+On remarque que contrairement aux fonctions que nous avons utilisé avant, nous ne donnons pas qu'un seul **argument** à la fonction `cut()`. En effet, la très grande majorité des fonctions prennent plusieurs arguments, pour ajouter des options dans le traitement des données. Ici, c'est l'argument `breaks` qui est utilisé. On le retrouve également dans les fonctions permettant de créer des graphiques d'histogramme par exemple. 
+
+On remarque également que nous avons créé une nouvelle variable `AGEclasse` , sans que R ne bronche. On peut créer de nouvelles variables dans un tableau assez simplement, et c'est recommandé pour ne pas perdre les informations existantes.
+
+Si l'on souhaite créer un nouveau tableau avec les variables transformées, il est conseillé de créer un nouvelle objet qui reprend le même tableau. Voici un exemple de manipulation qui peuvent être réalisées
+
+```{r, results='hide'}
+df <- openxlsx::read.xlsx("Sources/vico2020.xlsx", colNames = TRUE)
+
+df$AGEclasse <- df$AGEclasse <- cut(df$AGE, breaks = c(0, 18, 25, 40, 60, 80))
+df$Sexe_reco <- df$SEXE <- case_when(
+  df$SEXE == "Un homme" & df$AGE > 60 ~ "H+60",
+  df$SEXE == "Une femme" & df$AGE > 60 ~ "F+60",
+  df$SEXE == "Un homme" ~ "H-60",
+  df$SEXE == "Une femme" ~ "f-60",
+  TRUE ~ "Autre"
+)
+
+df2 <- df[c("AGEclasse", "Sexe_reco")]
+head(df2)
+```
+```{r, echo=FALSE}
+kable(head(df2), format="markdown")
+```
+
+### Renommer des variables
+
+On peut très facilement renommer des variables avec R, en utilisant notamment la fonction `rename()` du tidyverse.
+Il faut assez simplement fournir plusieurs informations à la fonction :
+
+```{r}
+df <- rename(df, 
+       'POLITIQUE' = 'POL',
+       'Niveau_de_diplôme' = 'DIPLONIV')
+c('POL', 'Niveau_de_diplôme') %in% names(df) 
+```
+
+On voit que la syntaxe est un peu particulière puisqu'elle prend la forme `nouveau_nom = ancien_nom`. 
+Nous utilisons également l'opérateur `%in%` qui permet de tester si un des éléments de notre vecteur à gauche de l'expression est présent dans le vecteur (ou l'objet) à droite de l'expression. Ce test nous renvoit des valeurs "vrai" ou "faux" qui permettent de tester et de sélectionner de l'information. 
+
+### Tests et condition
+
+Toutes les sélections fondées sur des tests de conditions fonctionnent de cette manière : si l'on regarde en détails les sorties de cette opération :
+
+```{r}
+(df$AGE < 60)[0:10]
+```
+Les résultats sont un vecteur de la même longueur avec des résultats vrais ou faux. c'est avec ces vecteurs de type `logical`, qu'on appelle également booléens dans d'autres langages informatiques, que l'on peut sélectionner de l'information :
+
+```{r}
+test <- c(rep(TRUE,length(df$AGE)/2), rep(FALSE,length(df$AGE)/2)) ### On créer des TRUE et des FALSE de la longueur de notre tableau
+test <- test[sample(1:length(test))]                    ### On ditribue aléatoirement les TRUE et les FALSE
+df$AGE[test][1:100]                                     ### On regard les 100 premières valeurs de df$AGE qui correspondent au test
+
+df$AGE[1:100]                                           ### On regarde les 100 premières valeurs de df$AGE
+(df$AGE[1:100] == df$AGE[test][1:100])                 ### On compare si les valeurs sont les mêmes
+```
+C'est de cette manière que l'on peut sélectionne de l'information "manuellement". Nous verrons plus tard comment fonctionne le `tidyverse`, et en particulier les fonctions du `dplyr`.
+
+## Exercices
+
+#### On souhaite a présent recoder la variable **numérique** `RESNB` en catégorie. Recodez la variable tel qu'il existe des groupes de 1, 2, 3 à 5 et plus de 5 personnes.
+
+```{r, echo=FALSE}
+df$RESNB_reco <- cut(df$RESNB, breaks = c(0, 1, 2, 5, max(df$RESNB)))
+kable(freq(df$RESNB_reco), format="markdown")
+```
+
+#### Renommez ensuite les catégories en `seul`, `couple`, `famille`, `grande_famille`
+
+```{r, echo=FALSE}
+df$RESNB_reco <- fct_recode(df$RESNB_reco,
+  "seul" = "(0,1]",
+  "couple" = "(1,2]",
+  "famille" = "(2,5]",
+  "grande_famille" = "(5,13]"
+)
+kable(freq(df$RESNB_reco), format="markdown")
+```
+
+Renommez la variable `RESNB_reco` en `Type_RES`
+
+```{r}
+df <- rename(df,
+       'Type_RES' = 'RESNB_reco')
+names(df)
+```
+On souhaite maintenant créer une nouvelle variable pour observer le port du masque en fonction du Sexe qu'on appellera `MASQUE_SEXE`.
+Proposez un recodage pour cette variable.
+
+
+```{r, echo=FALSE}
+df <- read.xlsx("Sources/vico2020.xlsx")
+
+df$MASQUE_SEXE <- case_when(
+  df$MASQUE == "Oui" & df$SEXE == "Une femme" ~ "F_masque",
+  df$MASQUE == "Oui" & df$SEXE == "Un homme" ~ "H_masque",
+  df$MASQUE == "Non sélectionné" & df$SEXE == "Une femme" ~ "F_non",
+  df$MASQUE == "Non sélectionné" & df$SEXE == "Un homme" ~ "H_non"
+)
+freq(df$MASQUE_SEXE) %>% arrange(desc(n))
+```
+```{r, echo=FALSE}
+kable(arrange(freq(df$MASQUE_SEXE), desc(n)), format="markdown")
+```
+
+
+
+## Sélectionner l'information avec dplyr
+
+LE package dyplr ajoute un certain nombre de fonctions pour sélectionner de l'information, renommer des variables, recoder de l'information. 
+
+Nous avons déjà vu quelques unes des fonctions du dyplr, comme la fonction `rename()`. Il en existe un certain nombre qui peuvent permettre de plus simplement sélectionner de l'information
+
+#### select() et filter()
+
+La fonction `select()` est une des plus courante et facilite la sélection de colonnes (ou variables) dans un tableau. Au lieu de recourir à de longues "phrases" comme `df[c("col1", "col2")]`, la fonction rend la sélection plus lisible :
+
+```{r, results='hide'}
+select(df, SEXE, RESNB, AGE)
+```
+```{r, echo=FALSE}
+kable(head(select(df, SEXE, RESNB, AGE)), format="markdown")
+```
+On peut fournir autant de variables que l'on souhaite à select, tout en évitant la syntaxe des vecteurs `c()`, et en évitant également l'utilisation de guillement `"` pour chaque variable. Cela permet de plus simplement sélectionner l'information. On peut également utiliser select pour ne pas sélectionner une partie de l'information en utilisant l'opérateur `-`:
+
+```{r, results='hide'}
+select(df, -AGE, -SEXE)
+```
+```{r, echo=FALSE}
+kable(head(select(df, -AGE, -SEXE))[,1:8], format="markdown")
+```
+
+En dernier, select permet également de sélectionner un ensemble de colonne, en utilisant l'opérateur `:`, de la même manière que nous le faisons avec les `[]` : 
+
+```{r, results='hide'}
+select(df, AGE:RESISOL)
+```
+```{r, echo=FALSE}
+kable(head(select(df, AGE:RESISOL)), format="markdown")
+```
+
+On peut bien sûr décider de ne pas conservé un ensemble de colonne avec l'utilisation des opérateurs `-` et `:`, sous la forme `select(df, -AGE:-RESISOL)`. On peut également assigner le résultats à une variable, qui conservera que les résultats du sous-ensemble du tableau traité par la fonction `select()`.
+
+En particulier `select()` est très pratique pour sélectionner des variables par noms de colonne. On peut utiliser tout un ensemble d'argument pour sélectionner à partir d'une "expression".
+
+```{r, results='hide'}
+select(df, starts_with("RES"))
+```
+```{r, echo=FALSE}
+kable(head(select(df, starts_with("RES"))), format="markdown")
+```
+On voit ici que `select()` n'a sélectionné que les colonne qui commence par "RES". Il existe un ensemble d'argument qui fonctionne de la même manière :
+
+* `ends_with()` : qui termine par l'expression
+* `contains()` : qui contient l'expression
+* `matches()` : qui matche avec l'expression
+
+Contains et matches fonctionne à peu près de la même manière. 
+
+`filter()` permet quant à elle de sélectionner des individus, ou des lignes, selon des conditions. De la même manière que nous avons utilisé la syntaxe `df[df$AGE > 60]`, on peut utiliser filter de cette manière :
+
+```{r, results='hide'}
+filter(df, SITCONJ == "Non", SEXE == "Une femme", MASQUE == "Oui")
+```
+```{r, echo=FALSE}
+kable(head(filter(df, SITCONJ == "Non", SEXE == "Une femme", MASQUE == "Oui"))[, 1:5], format="markdown")
+```
+
+`filter()`, de la même manière que `select()` permet d'appliquer autant d'opération que l'on souhaite en argument.
+
+#### arrange() & count()
+
+La fonction arrange() vous permet de rapidement trier un tableau par colonne. Voici à quoi ressemble sa syntaxe : 
+
+```{r, results='hide'}
+arrange(df, AGE)
+```
+```{r, echo=FALSE}
+kable(head(arrange(df, AGE))[, 1:5], format="markdown")
+```
+
+On peut choisir de trier le tableau non pas de manière croissante, mais de manière décroissante en utilisant l'argument `desc()` autour de la variable à trier.
+
+```{r, results='hide'}
+arrange(df, desc(AGE))
+```
+```{r, echo=FALSE}
+kable(head(arrange(df, desc(AGE)))[, 1:5], format="markdown")
+```
+
+La fonction `count()` permet de compter le nombre d'individu d'une modalité, ou d'un groupe. Par exemple si l'on souhaite savoir le nombre de femme et d'homme dans notre tableau :
+
+```{r, results='hide'}
+count(df, SEXE)
+```
+```{r, echo=FALSE}
+kable(head(count(df, SEXE)), format="markdown")
+```
+
+#### Mutate() & groupby()
+
+Ici, on monte d'un cran conceptuellement et en terme d'écriture du code. la fonction `mutate()` permet de créer une nouvelle colonne dans notre tableau, en principe avec les variables existantes déjà dans le tableau. Cette fonction peut être très utile si l'on souhaite ajouter de l'information à partir de l'information déjà existante. 
+
+```{r, results='hide'}
+temp <- mutate(df, 
+       AGE_gp = AGE/10)
+select(temp, AGE_gp)
+```
+```{r, echo=FALSE}
+kable(head(select(temp, AGE_gp)), format="markdown")
+```
+Cependant, cette fonction n'est posible que si l'on utilise une colonne afin d'y faire des opérations qui renvoie le nombre exacte d'observations. On ne peut pas aussi facilement créer une nouvelle variable. Si l'on souhaite ajouter une colonne qui compte le nombre de personne qui ont le même age :
+```{r, error=TRUE}
+temp <- mutate(df, 
+       AGE_gp = count(df, AGE))
+```
+On a l'erreur suivante : `✖ 'AGE_gp' must be size 2000 or 1, not 57.`. Cela signifie que nous n'avons pas assez d'observation pour créer une nouvelle colonne. 
+
+Dans ce cas, on peut utiliser la fonction `groupby()`, qui permet de grouper les observations pour chaque modalité d'une variable sélectionnée. Cela permet de définir des gruopes sur lesquelles on peut appliquer des fonctions. Si l'on ne donne aucune autre instruction que `group_by()`, il ne se passe presque rien :
+
+```{r, results='hide'}
+group_by(df, SEXE)
+```
+```{r, echo=FALSE}
+kable(head(group_by(df, SEXE))[,1:5], format="markdown")
+```
+L'intérêt de groupby intervient quand on applique d'autres fonctions après son premier traitement
+
+```{r, results='hide'}
+count(group_by(df, AGE, SEXE))
+```
+```{r, echo=FALSE}
+kable(head(count(group_by(df, AGE, SEXE))), format="markdown")
+```
+
+On peut également créer des groupes avec plusieurs variables, pour affiner notre connaissance sur un groupe d'individu.On peut également utiliser les fonctions `slice()`, `slice_min()` ou `slice_max()` pour sélectionner certains individus pour chaque groupe. Par exemple, en utilisante `slice_max()`, on récupère tous les individus, pour nos catégories, qui ont la valeur la plus élevé de la variable choisie : 
+
+```{r, results='hide'}
+select(slice_max(group_by(df, AGE), RESNB), SEXE, RESNB)
+```
+```{r, echo=FALSE}
+select(slice_max(group_by(df, AGE), RESNB), SEXE, RESNB) %>% kable() %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+Ici, on veut observer pour chaque âge les individus pour lesquels le nombre de personnes avec lesquels elles ont passées leur confinement est le plus élevé de cet âge. ça n'a pas forcément beaucoup de sens, mais cela peut être beaucoup plus utile si l'on veut observer les âge maximum pour chaque groupe "POL" par exemple : 
+
+```{r, results='hide'}
+temp <- count(select(slice_max(group_by(df, POL), AGE)), POL)
+temp2 <- unique(select(slice_max(group_by(df, POL), AGE), AGE))
+merge.data.frame(temp, temp2)
+```
+```{r, echo=FALSE}
+merge.data.frame(temp, temp2) %>% arrange(n) %>% kable() %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+
+
+Qu'avons nous fait ici ?
+
+* d'abord nous avons sélectionner le nombre de personne qui sont les plus âgés de leur catégorie politique et nous avons stocké ces valeurs dans la variable `temp`
+* Ensuite nous avons pris l'âge des personnes personnes les plus âgés pour chaque groupe politique et les avons stocké dans la variable `temp2`
+* Enfin, nous avons fusionné ces deux tableaux afin d'avoir un seul tableau qui résume toutes ces informations. 
+
+Ces sélections ne sont pas si difficile, mais la lecture et l'écriture du petit script ci-dessus peut-être difficile. D'abord parce que nous utilisons un certain nombre de fonctions, qui ont chacune besoin de leur argument, et parce que l'on doit bien déclarer à chaque fois toutes les informations dont ont besoins ces fonctions.
+
+## What %>% the %>% pipe 
+
+Quand on manipule un tableau de données, il est très fréquent d’enchaîner plusieurs opérations. On va par exemple extraire une sous-population avec filter, sélectionner des colonnes avec select puis trier selon une variable avec arrange, etc. Le package dyplr intègre en plus des fonctions une nouvelle syntaxe d'écriture qui permet d'enchaîner les opérations grâce à l'opérateur `%>%` qu'on appelle un `pipe`. Comment fonctionne cette syntaxe ? Voici un exemple simple : 
+
+```{r, results='hide'}
+df %>% filter(AGE == 30)
+```
+```{r, echo=FALSE}
+df %>% filter(AGE == 30) %>% select(1:8) %>% kable() %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+Le **pipe** permet de rendre beaucoup plus lisible les enchaînements d'opération que l'on applique sur nos données, et d'ainsi faciliter la lecture et l'écriture de nos manipulations. 
+Le second avantage est de pouvoir appliquer les fonctions dans leur ordre "logique", c'est-à-dire les unes à la suite des autres, et non plus d'emboîter chacune des opérations. Enfin, en lisant cette syntaxe : `count(select(slice_max(group_by(df, POL), AGE)), POL)`, on peut facilement se perdre dans les arguments (ou paramètres) que l'on donne à nos fonctions.
+
+On peut recopier ce même enchaînement d'opérations grâce à un **pipe** : 
+
+```{r}
+df %>% group_by(POL) %>%
+  slice_max(AGE) %>%
+  select(AGE, POL) %>%
+  count() %>%
+  kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped") ### On utilise ici kable pour l'affichage de nos données sur ce fichier html.
+```
+Beaucoup plus lisible et simple d'écriture non ?
+
+Pour résumer, le pipe prend les résultats à sa gauche, pour les donner en argument à la fonction de sa droite, ou qui sont situés après dans le cas où l'on fait des retours à la ligne pour la lisibilité. 
+
+#### summarise()
+
+...
+
+#### Exercices : 
+
+**1. Dans le tableau de données VICO, créer une variable `tmp` qui contient les hommes de plus de 60 grâce à la fonction `filter()` :**
+
+```{r, echo=FALSE}
+filter(df, SEXE == "Un homme", AGE > 60) %>% kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+
+**2. En utilisant la fonction `slice()` afficher les 5 premiers individus du tableau et le 10e individu du tableau : **
+
+```{r, echo=FALSE}
+slice(df, 1:5, 10) %>% kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+**3. on souhaite maintenant avoir un tableau des individus âgé de 20 à 62 ans compris, et ne conserver que les colonnes `MASQUE`, `RESISOL`, `SEXE`, `AGE` :** 
+
+```{r, echo=FALSE}
+df %>% filter(AGE >= 20 & AGE <= 62) %>% select(MASQUE, RESISOL, SEXE, AGE) %>% arrange(AGE) %>% kable(booktabs = TRUE) %>% kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% scroll_box(width = "1000px", height = "400px")
+```
+**4. Si vous ne l'avez pas fait, re-effectuez les exercices précédents en utilisant des *pipe* `%>%`. **
+
+**5. Grouper le tableau par `SEXE` et par `MASQUE`, afin de calculer la moyenne d'âge de chaque groupe, trier par cette même moyenne. Le tableau doit ressembler à celui-ci  :**
+
+```{r, echo=FALSE}
+df %>% 
+  group_by(SEXE, MASQUE) %>%
+  summarise(
+    MOY = mean(AGE)
+  ) %>%
+  arrange(MOY) %>%
+  kable(booktabs = TRUE) %>% 
+  kable_styling("striped")
+```
+
+**6. Complétez le code ci-dessous pour obtenir un tableau des femmes de 30 à 50 ans qui portent un masque, en sélectionnant les colonnes concernées, et en créant une nouvelle colonne avec les effectifs par age. Le résultat doit être un tableau avec l'ensemble des effectifs des femmes pour chaque âge entre 30 et 50 ans qui portent un masque :**
+
+```{}
+df %>%
+  filter(AGE >= 30 & ... <= ...,  ...) %>% 
+  s...(..., ...) %>%
+  g...() %>%
+  mutate(
+    nb = n()
+  ) %>%
+  arrange(AGE) %>%
+  u...()
+```
+```{r, echo=FALSE}
+df %>%
+  filter(SEXE == "Une femme", AGE >= 30 & AGE <= 50,  MASQUE == "Oui") %>% 
+  select(SEXE, AGE, MASQUE) %>%
+  group_by(AGE) %>%
+  mutate(
+    nb = n()
+  ) %>%
+  arrange(AGE) %>%
+  #unite(SEXE, col = SEXE, AGE, sep= "-") %>%
+  unique %>%
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+
+```
+
+
+## Boucles, fonctions et conditions
+
+
+#### Boucles
+
+La plupart des langages de programmation fonctionne sur le principe de l'algorithmie, c'est-à-dire sur un ensemble d'instruction que l'on donne à l'ordinateur qu'il peut exécuter. Nous avons déjà fait de l'algorithmie dans cette formation à votre insu. Quand vous demandez à R de sélectionner une partie du tableau, puis de renommer certaines variable et d'enfin calculer une moyenne par exemple, vous avez créé une suite d'opération les unes à la suite des autres, vous avez créé un algorithme, félicitations !
+
+On peut vite se retrouver à vouloir effectuer une même opération (comme sélectionner une colonne) plusieurs fois de suite. Vous pourriez alors l'écrire de cette manière :
+
+```{r, error=TRUE, results='hide'}
+df <- df %>% 
+  select(colonne1) %>%
+  do_something
+df <- df %>%
+  select(colonne2) %>%
+  do_the_same_thing
+...
+```
+
+
+Mais on voit rapidement que cela va prendre beaucoup de place et d'écriture de code, d'autant plus si vous travaillez sur 500 colonnes !
+On peut alors utiliser des `boucles` afin de réduire l'écriture et d'accélérer le processus. Comme son nom l'indique, une boucle répète la même opération sur des objets qu'on lui donne en ``paramètre`. Il existe plusieurs opérateur pour une boucle, mais retenons surtout `for` qui permet d'écrire des opérations sous la forme :
+
+Pour (les objets que je souhaite manipuler) {
+  faire des opérations...
+}
+
+Voila comment s'écrit une boucle assez simplement. Voilà ce que donne la syntaxe avec R :
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+for (animal in ZOO) {
+  print(animal)
+  ZOO[ZOO == animal] <- paste(animal, "Vu")
+  print(ZOO)
+}
+```
+
+Concrètement, une boucle utilisant l'opérateur `for` agit assez simplement : pour chaque animal dans le zoo, affiche le nom de l'animal et ajoute "Vu" à la fin pour signifier que l'on a vu l'animal.
+
+Ce type de phrase correspond parfaitement à la manière dont vous devez penser quand vous utilisez un langage de programmation. Ce sont des types d'instruction réalisable pour une machine. Pour un tableau de données on pourrait, par exemple, vouloir recoder un ensemble de NAs en NC (pour des personnes qui ne sont pas concernés par une question). Il faut alors réfléchir de manière algorithmique : Pour chacune de mes variables, vérifier que les individus sont concernés : 
+
+```{r, error=TRUE, results='hide'}
+for(var in colonnes) {
+  df[var][df$variable_reférence == "Non"] <- "NC"
+}
+```
+
+
+Je ne garantis pas le fonctionnement de la boucle ci-desuss, mais voici l'idée. On traduit notre volonté en instructions interprétable par la machine, et on l'écrit avec le langage de programmation et sa syntaxe spécifique. On pourrait écrire ce même algorithme en python, en C, en C++... mais avec leur syntaxe propre. Certains langage n'ont pas les mêmes possibilités, ou les mêmes manières de réalier les opérations, il faut donc bien connaître la syntaxe avant de traduire les fonctions dans tous les langages.
+
+Un mécanisme très pratique (et connu) des boucles est `l'itération` ou `l'incrémentation`, c'est-à-dire l'évolution dans une boucle évènement par évènement. Traditionnellement une itération est chiffré et évolue de 1 en 1. 
+
+```{r}
+for (i in 1:10) {
+  print(i)
+}
+```
+Nous avons itérer au travers de la variable ZOO précédemment, nous pouvons montrer concrètement celle-ci :
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+for (i in 1:length(ZOO)) {
+  animal <- ZOO[i]
+  print(paste(i, animal))
+  ZOO[ZOO == animal] <- paste(animal, "Vu")
+  print(ZOO)
+}
+```
+Les boucles sont très pratiques pour réaliser plusieurs fois la même opération, mais ne sont pas les plus efficaces pour réaliser des opérations car elles nécessitent toujours d'instructions que de simple traitement de tableau qui sont pour autant moins intuitif. Attention à ne pas vouloir écrire des boucles tout le temps et partout ! Si une suite d'opération peut être effectuée sans boucle, celle_ci est forcément plus efficace et évite de vous retrouver dans une boucle infinie !
+
+Par exemple, essayons de recoder tous les individus qui prennent une valeur de la variable SEXE avec une boucle `for` :
+
+```{r}
+#### Avec une boucle
+
+df <- openxlsx::read.xlsx("sources/vico2020.xlsx", colNames = TRUE)
+
+start <- Sys.time()
+
+for (row in 1:nrow(df)) {
+  if (df[row, "SEXE"] == "Un homme") {
+    df[row, "SEXE"] <- "H"
+  } else {
+    df[row, "SEXE"] <- "F"
+  }
+}
+print(df$SEXE)
+end <- Sys.time()
+end
+time_loop <- difftime(end, start, units="secs")
+```
+
+```{r}
+df <- openxlsx::read.xlsx("sources/vico2020.xlsx", colNames = TRUE)
+
+start <- Sys.time()
+
+ifelse(df$SEXE == "Un homme", "H", "F")
+
+end <- Sys.time()
+time_no_loop <- difftime(end, start, units="secs")
+
+time_loop - time_no_loop
+```
+
+On voit donc l'écarte de temps, qui reste très petit dans notre cas, mais qui peut vite être une gêne dans les processus.
+Nous avons également utiliser les opérateur `if` et `else`, que je vais maintenant détailler.
+
+#### Conditions
+
+Une condition ne s'utilise pas nécessairement dans une boucle, et elle permet de tester, de la même manière que ifelse, une condition dans notre algorithme :
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+if ("Chat" %in% ZOO) {
+  print("Je vais aller au Zoo")
+}
+```
+On peut ainsi, de la même manière que les conditions entre `[]`, sélectionner des informations par conditions. Les conditions sous la forme de `if` sont particulièrement intéressante dans le cas des boucles parce qu'elles nous permettent de faire des actions conditionnelles. Reprenons notre variable ZOO.
+
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+
+for (animal in ZOO) {
+  print(animal)
+  ZOO[ZOO == animal] <- paste(animal, "Vu")
+  print(ZOO)
+}
+```
+Maintenant que nous avons vu tous les animaux du ZOO, le zoo a décidé d'inclure 2 nouveaux specimens, un requin (et oui) et un canard
+
+```{r}
+ZOO <- append(ZOO, c("Requin", "Canard"))
+ZOO <- sort(ZOO)
+ZOO
+```
+
+En plus, la direction du zoo a changé l'ordre de visite et l'a trié dans l'ordre alphabétique. Pour notre prochaine visite, nous souhaitons aller seulement aux animaux que nous n'avons pas encore vu. 
+
+```{r}
+non_vu <- c("Requin", "Canard")
+
+for (animal in ZOO) {
+  if (animal %in% non_vu) {
+    sprintf("Je n'avais jamais vu le %s", animal) %>% print()    ### sprintf() permet de donner des variables dans un chaîne de caratère
+  } else {
+    sprintf("Jai déjà vu le %s", animal) %>% print()
+    next
+  }
+}
+```
+En utilisant les arguments `if` et `else`, on peut donc conditionner les actions que l'on souhaite réaliser au sein d'une boucle. L'argument `next` nous permet de passer à l'itération suivante, ce qui est pratique si l'on ne souhaite pas réaliser d'actions particulières sur un élément de notre boucle. 
+
+```{r}
+for (i in 1:10) {
+  if (i%%2 == 0) {   ##### Le signe '%%' signifie le 'modulo', c'est-à-dire le résidu de la division entière. 
+    next             ##### Dans notre cas, cela permet de vérifier si i est pair ou impair.
+  } else {
+    print(i)
+  }
+}
+```
+En plus de `if` et de `else`, on peut également utiliser `else if` qui permet de donner une condition supplémentaire si le premier `if` n'est pas suffisant. 
+
+```{r}
+ZOO <- c("Chat", "chien", "pivert", "vache", "perroquet")
+ZOO <- append(ZOO, c("Requin", "Canard"))
+
+for (animal in ZOO) {
+  if (animal == "Chat" | animal == "Chien") {
+    print("animaux d'appartement")
+  } else if (animal %in% c("perroquet", "Canard", "pivert")) {
+    print("animaux volant")
+  } else {
+    print("Autres animaux")
+  }
+}
+```
+IL est important de ne pas répéter trop de `if` ou de `else if`. Si c'est le cas, on parle de "forêt de if", ce qui n'est jamais bon signe. Soit vous n'avez pas suffisamment sélectionner vos données en amont, soit vous n'avez pas bien écrit vos conditions. Dans tous les cas, cela augmente assez rapidement la durée de calcul de vos algorithmes. 
+
+
+On peut assez facilement penser que tout est plus simple avec des boucles et des conditions, mais en plus du temps de calcul qui est rallongée, créer trop de boucles pour faire les mêmes opérations allonge sensiblement l'écriture du code et complique la lisibilité. Si vous avez besoin de la même boucle, vous pouvez également créer des fonctions que l'on peut utiliser dans divers contexte pour faire les mêmes opérations. 
+
+#### Fonctions
+
+Les fonctions sont les outils du programmeur ou du staticien dans notre cas. Vous en avez déjà utilisez un certain nombre si vous êtes arrivé jusqu'ici. On remarque une structure particulière : 
+
+* Une fonction porte un nom, c'est évident, mais c'est très important, notamment quand vous créérez vos propres fonctions. 
+* Elle prend des arguments, en quantité finie, qui sont définies à la construction de la fonction. 
+* Elle retourne des résultats.
+
+De la même manière que `for` la structure d'une fonction peut ressemble à ceci :
+
+```{r}
+une_fonction <- function(x=NULL, arg1=NULL, arg2=NULL) {
+  if (!is.null(x) & !is.null(arg1) & !is.null(arg2)) {
+    print(paste(x, arg1, arg2))
+  } else {
+    print("Vous n'avez pas donner tous les arguments")
+  }
+}
+une_fonction()
+une_fonction(x="Wah une fonction !", arg1="Elle est ", arg2 = "incroyable")
+```
+Nous avons ici fait pleins de choses qui sont des mécaniques essentielles : 
+
+* Nous avons créer une fonction appelé "une_fonction" (quelle originalité !)
+* Nous avons choisi qu'elle aurait 3 arguments : x, arg1 et arg2
+* Nous avons **instancié** toutes ces variables (ou assigné) la valeur `NULL`
+* Nous faisons un test de condition pour savoir si nous avons effectivement donner une autre valeur à nos arguments. 
+
+On peut des choses autrements plus intéressante avec une fonction. Retournons de nouveau au ZOO : 
+
+```{r}
+Visite_ZOO <- function(ZOO, animaux_visité) { ### Cette fois nous n'avons pas instancié les arguments
+  for (animal in animaux_visité) {
+    if (animal %in% ZOO) {
+      ZOO[ZOO == animal] <- paste(animal, "Vu")
+    } else {
+      sprintf("%s n'est pas dans le ZOO", animal) %>% print()
+    }
+  }
+  return(ZOO)
+}
+
+Visite_ZOO(ZOO, c("Canard", "Chèvre"))
+
+```
+Ci-dessus nous avons fait une fonction qui permet d'ajouter "Vu" à un animal que nous avons vu au ZOO. Si l'animal que nous avons vu n'est pas au ZOO, la fonction nous préviens. 
+On peut remarquer 2 choses : 
+
+* Nous utilisons la fonction `return()` qui permet de 'sortir' un élément de la fonction
+* Sans réassigner les résultats de la fonction, notre variable ZOO n'a pas changé. C'est parce que les variables qui sont au sein de la variable lui sont réservées. La variable ZOO que nous avons nommé pour notre variable n'a rien à voir avec notre variable ZOO définie ailleurs. Par exemple :
+
+```{r}
+
+Visite_ZOO <- function(ZOO_de_lyon, animaux_visité) { ### Cette fois nous n'avons pas instancié les arguments
+  for (animal in animaux_visité) {
+    if (animal %in% ZOO_de_lyon) {
+      ZOO_de_lyon[ZOO_de_lyon == animal] <- paste(animal, "Vu")
+    } else {
+      sprintf("%s n'est pas dans le ZOO", animal) %>% print()
+    }
+  }
+  return(ZOO_de_lyon)
+}
+
+Visite_ZOO(ZOO, c("Canard", "Chèvre"))
+
+```
+On voit que cela renvoit exactement les mêmes résultats. Par convention, on nomme plus souvent les variables à l'intérieur d'une fonction avec des lettres comme 'x', ou 'y', mais il peut être important de signifier une variable avec un nom évocateur.
+
+### Exercices
+
+Nous ferons les exercices suivants à partir du jeu de données VICO que nous avons utilisé jusqu'à présent
+
+```{r, results='hide'}
+df <- read.xlsx("./Sources/vico2020.xlsx")
+tibble(df) %>% 
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+```
+
+```{r, echo=FALSE, results='hide'}
+tmp <- table(df$PCS_rec6, df$REV) %>%
+  as.data.frame() %>% 
+  pivot_wider(names_from = Var1, values_from = Freq)
+
+colnames <- tmp %>% 
+  select(-Var2) %>% colnames()
+
+Tot <- c("Total")
+for (col in colnames) {
+  Tot <- append(Tot, sum(tmp[col]))
+}
+
+tmp
+
+tmp$Var2 <- as.character(tmp$Var2)
+
+
+tmp <- rbind(tmp, Tot)
+
+
+for (col in colnames) {
+  tmp[col] <- as.double(tmp[[col]])
+}
+
+tmp$Tot_C <- tmp %>% 
+  select(-Var2) %>% 
+  rowSums()
+
+tmp %>% relocate(Tot_C, .before = `Agriculteurs, agricultrices`) %>% arrange(desc(Tot_C))
+```
+
+
+## Premiers travaux statistiques
+
+
+
+
+## Recodage avancé
+
+Il arrive assez régulièrement que nous ayons des tableaux des données qui soient mal formaté, que des variables se retrouvent dispersées sur plusieurs colonnes, ou encore qu'il faille recoder des `NA` en fonction de certaines personnes dans seulement certaines colonnes.
+
+Nous avons vu précedemment comment sélectionner conditonnellement des individus et des colonnes en fonction de condition. Il s'agit ici de mettre en pratique ces informations pour des recodages plus avancés. 
+
+Prenons l'exemple suivant : nous avons un questionnaire qui souhaitait connaître la discipline académique desquelles étaient issues les répondants. Mais on se retrouve une colonne pour chacune des modalités, avec des modalités 'Oui' ou 'Non'. De plus, les répondants avaient la possibilités de cocher plusieurs disciplines. 
+
+Voici à quoi ressemble notre jeu de données :
+
+```{r, echo=FALSE}
+df <- openxlsx::read.xlsx("Sources/DONNEES_RJC_18_11.xlsx", colNames = TRUE)
+df <- df %>% select(starts_with("Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s)"))
+df[df == "N/A"] <- NA
+df %>% 
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+```
+Il n'y a pas de manière simple (comme une fonction unique), qui permet de résoudre ce problème. Il nous faut utiliser plusieurs opérations pour obtenir une variable parfaitement recodé.
+
+On peut dans un premier temps recoder les "Oui" et les "Non" de chaque colonne :
+
+```{r, results='hide'}
+df$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?.[Anthropologie/ethnologie]` <- fct_recode(
+  df$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?.[Anthropologie/ethnologie]`,
+  "Anthropologie/ethnologie" = "Oui",
+  NULL = "Non",
+)
+df$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?.[Anthropologie/ethnologie]`
+```
+```{r, echo=FALSE}
+df$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?.[Anthropologie/ethnologie]` %>%
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+```
+
+Faire ces opérations peut être particulièrement long et fastidieux. On peut décider d'automatiser ce processus. 
+La première question est de savoir de quoi a-t-on besoin avec les données en présence ?
+
+* En premier, nous avons besoin de la modalité pour remplacer le "Oui". Dans notre cas, nous pouvons la retrouver directement dans le nom de la colonne, mais nous n'aborderons pas ici les expression régulières et l'extraction de texte. Nous pouvons créer un vecteur avec nos futures modalités
+
+```{r}
+col_names <- c("Anthropologie/ethnologie", "Économie", "Droit", "Géographie", "Histoire", "Philosophie", "Psychologie", "Santé.publique", "Sciences.de.gestion.et.management", "Sciences.de.l’éducation", "Sciences.de.l’information.et.de.la.communication", "Sciences.politiques", "Sociologie", "STAPS", "Autre")
+col_names
+```
+
+* Maintenant que nous avons nos modalités, on peut, pour chaque colonne, échanger les "Oui" par notre modalités, et les "Non" par des valeurs nulles.
+
+```{r, results='hide'}
+df <- openxlsx::read.xlsx("Sources/DONNEES_RJC_18_11.xlsx", colNames = TRUE)
+df[df == "N/A"] <- NA
+df2 <- df %>% select(starts_with("Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s)"))
+
+for (i in 1:length(names(df2))) {
+    print(as.character(col_names[i]))
+    df2[i][df2[i] !="Oui" & df2[i] !="Non" & is.na(df2[i]) == F] <- "Autre"
+    df2[i][df2[i]=="Oui"] <- as.character(col_names[i])
+    df2[i][df2[i]=="Non"] <- NA
+    df2[i][is.na(df2[i])] <- NA
+}
+
+#df %>% select(starts_with("Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s)"))
+head(df2)
+```
+```{r, echo=FALSE}
+df2 %>% 
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+```
+```{r}
+dim(df2)
+```
+
+* Une fois ces résultats obtenus, on peut "coller", ou plutôt "concaténer" les différentes colonnes.
+
+```{r, results='hide'}
+df2 <- unite(df2, "Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?", names(df2), sep = "-", na.rm = T)
+df2$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?`[df2$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?` == ""] <- NA
+df2$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?` %>% freq() %>% arrange(desc(n))
+```
+```{r, echo=FALSE}
+df2$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?` %>% 
+  freq() %>% 
+  arrange(desc(n)) %>%
+  kable(booktabs = TRUE) %>% 
+  kable_styling(font_size = 15, "striped", fixed_thead = TRUE) %>% 
+  scroll_box(width = "1000px", height = "400px")
+```
+
+* On peut ensuite supprimer ces colonnes et les remplacer par notre variable recodée
+
+```{r}
+print(dim(df))
+df$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?.[Anthropologie/ethnologie]` <- df2$`Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?`
+
+df <- df %>% rename(
+  "Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?" = "Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?.[Anthropologie/ethnologie]"
+)
+
+df <- df %>% select(-starts_with("Dans.quelle(s).discipline(s).avez-vous.obtenu.votre.(vos).master(s).?."))
+dim(df)
+```
+
+Ce bout de code est un peu particulier, parce qu'on souhaite réinsérer notre colonne à la place de la première que nous souhaitions recoder. On fait donc différentes opérations, mais si ce n'est pas votre cas, vous pouvez simplement "coller" votre nouvelle colonne avec la fonction `cbind`, ou tout simplement créer une nouvelle variable avec `df$nouvelle_colonne`. On peut aussi utiliser la fonction `relocate()` pour assigner une colonne à un endroit.
+
+#### across()
+
+### Si notre recodage comporte plusieurs colonnes, mais les répondants ne peuvent sélectionner qu'une seule modalité
+
+Dans le cas où on souhaite recoder plusieurs colonnes, mais qu'une seule modalité n'était autorisée, nous ne sommes pas obligé de faire toutes ces manipulations. On peut simplement décider "d'inverser" le taleau avec la fonction `pivot_longer()` :
+
+```{r}
+
+```
+
+
