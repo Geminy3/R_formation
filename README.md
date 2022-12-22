@@ -12,6 +12,8 @@ On retrouve plusieurs modules :
 Plusieurs chapitres sont également en préparation (de loin) :
 - Un sur les bases de statistiques descriptives
 - Un chapitre d'exercice pour mettre en commun tous les apprentissages sur les chapitres différents.
+- Un sous-chapitre sur la fonction across du dplyr
+- Un chapitre sur les recodages complexes (boucles conditionnelles sur plusieurs colonnes...)
 
 Thanks to :
 
