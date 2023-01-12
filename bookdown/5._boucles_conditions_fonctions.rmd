@@ -70,7 +70,8 @@ for (i in 1:length(ZOO)) {
   print(ZOO)
 }
 ```
-Les boucles sont très pratiques pour réaliser plusieurs fois la même opération, mais ne sont pas les plus efficaces pour réaliser des opérations car elles nécessitent toujours d'instructions que de simple traitement de tableau qui sont pour autant moins intuitif. Attention à ne pas vouloir écrire des boucles tout le temps et partout ! Si une suite d'opération peut être effectuée sans boucle, celle_ci est forcément plus efficace et évite de vous retrouver dans une boucle infinie !
+
+Les boucles sont très pratiques pour réaliser plusieurs fois la même opération, mais ne sont pas les plus efficaces pour réaliser des opérations car elles nécessitent toujours plus d'instructions que de simple traitement de tableau qui sont pour autant moins intuitif. Attention à ne pas vouloir écrire des boucles tout le temps et partout ! Si une suite d'opération peut être effectuée sans boucle, celle_ci est forcément plus efficace et évite de vous retrouver dans une boucle infinie !
 
 Par exemple, essayons de recoder tous les individus qui prennent une valeur de la variable SEXE avec une boucle `for` :
 
@@ -109,8 +110,32 @@ print(time_no_loop)
 time_loop - time_no_loop
 ```
 
-On voit donc l'écarte de temps, qui reste très petit dans notre cas, mais qui peut vite être une gêne dans les processus.
+On voit donc l'écart de temps, qui reste très petit dans notre cas, mais qui peut vite être une gêne dans les processus.
 Nous avons également utiliser les opérateur `if` et `else`, que je vais maintenant détailler.
+
+### Pourquoi les boucles for et les conditions sont à éviter ? 
+
+R est un langage vectoriel, c'est-à-dire que les structures que l'on manipule avec R (list, factor, dataframe,...) sont des vecteurs. Cela signifie que l'on peut opérer tout un ensemble d'opération mathématique sur ces vecteurs qui sont beaucoup (beaucoup !) plus rapide que les principes d'itérations classiques. Par exemple si l'on écrit :
+
+```{r}
+vec <- 1:10
+vec
+vec10 <- vec + 10
+vec10
+```
+On réalise ici un calcul vectoriel, c'est-à-dire qu'on ajouter 10 à la valeur de chacun des éléments du vecteur. C'est beaucoup plus rapide (et moins fastidieux) que d'écrire : 
+
+```{r}
+vec <- 1:10
+vec
+for (i in seq_along(vec)) { #seq_along signifie "pour chauqe élément de l'objet".
+  vec10[i] <- vec[i] + 10
+}
+vec10
+```
+Qui dit vecteur dit opération vectoriel, dit surtout rapidité, et on peut le plus souvent s'éviter de longue boucle for fastidieuse avec l'ensemble des fonctions (vectorisées) qui existent dans R. 
+Les boucles for, souvent, sont utilisé dans des cas où il n'existe pas d'alternatives avec les fonctions déjà existantes (ou par non connaissance de ce qui se fait déjà).
+Si l'on réfléchit en boucle for, on peut imaginer que les opérations se résument à la phrase : "pour chaque éléments de mon objet". On peut trouver une alternative vectorielle dans la plupart des cas, par produit scalaire, sélection conditionnelle...
 
 ## Conditions
 
@@ -188,6 +213,8 @@ IL est important de ne pas répéter trop de `if` ou de `else if`. Si c'est le c
 
 
 On peut assez facilement penser que tout est plus simple avec des boucles et des conditions, mais en plus du temps de calcul qui est rallongée, créer trop de boucles pour faire les mêmes opérations allonge sensiblement l'écriture du code et complique la lisibilité. Si vous avez besoin de la même boucle, vous pouvez également créer des fonctions que l'on peut utiliser dans divers contexte pour faire les mêmes opérations. 
+
+
 
 ## Fonctions
 

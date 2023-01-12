@@ -1,0 +1,227 @@
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Exercices
+
+Dans ce dernier chapitre, nous avons souhaité créer un ensemble d'exercice afin de faciliter la prise en main des fonctions que nous avons vu précedemment. De manière générale, l'informatique s'apprend beaucoup par la pratique et la répétition des mêmes gestes et souvent des mêmes erreurs. Les exercices et les projets personnels sont les meilleurs moyens d'apprendre afin de créer des automatismes dans l'écriture de son code, et de reconnaître plus rapidement les erreurs. 
+
+## recodage simple et afficahge de données
+
+Nous allons d'abord procéder à quelques recodage au sein du jeu de donnée HDF2003
+
+```{r}
+library(questionr)
+library(tidyverse)
+library(openxlsx)
+library(kableExtra)
+data("hdv2003")
+df <- hdv2003
+```
+
+### Afficher les 10 premiers puis les 20 derniers individus du tableau `df`
+
+```{r}
+head(df, 10) %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+
+tail(df, 20) %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+```
+### Afficher uniquement les individus qui ont moins de 60 ans et qui `Exerce une profession` (variable `occup`)
+
+```{r}
+### 2 méthodes
+# avec []
+
+condition = df$age < 60 & df$occup == "Exerce une profession"
+df[condition, ] %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+
+# avec filter()
+df %>% 
+  filter(age < 60, 
+         occup == "Exerce une profession") %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+
+```
+
+### Afficher le nom des colonnes du tableau
+
+```{r}
+names(df)
+```
+### Afficher seulement les colonnes `age`, `poids`, `relig` et `occup`
+
+```{r}
+### Plusieurs méthodes
+# avec []
+condition = names(df) %in% c('age', 'poids', 'relig', 'occup')
+df[, condition] %>% names()
+
+# avec select()
+df %>% 
+  select('age', 'poids', 'relig', 'occup') %>% 
+  names()
+```
+
+### Afficher les loisirs `c("hard.rock","lecture.bd", "peche.chasse", "cuisine", "bricol",  "cinema", "sport", "heures.tv")` des femmes de plus de 60 ans
+```{r}
+### 2 méthodes
+# avec []
+condition_col = names(df) %in% c("hard.rock","lecture.bd", "peche.chasse", "cuisine", "bricol",  "cinema", "sport", "heures.tv")
+condition_ind = df$sexe == "Femme" & df$age > 60
+df[condition_ind, condition_col] %>% 
+  head() %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+
+# avec dplyr
+df %>% 
+  filter(sexe == "Femme", age > 60) %>% 
+  select(c("hard.rock","lecture.bd", "peche.chasse", "cuisine", "bricol",  "cinema", "sport", "heures.tv")) %>%
+  head() %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+```
+### Afficher le nombre de lignes et le nombre de colonne du tableau des hommes
+```{r}
+df %>% 
+  filter(sexe == "Homme") %>%
+  dim()
+
+### Ou sinon :
+
+df_H <- df %>% filter(sexe == "Homme")
+nrow(df_H)
+ncol(df_H)
+```
+## Recodage 
+
+### Recoder la variable sexe de manière à ce que les modalités `Homme` et `Femme` soit égale à `H`, `F` dans une nouvelle variable `sexe_reco`
+
+```{r}
+### Plusieurs manières de faire : 
+# Avec []
+df$sexe_reco[df$sexe == "Homme"] <- "H"
+df$sexe_reco[df$sexe == "Femme"] <- "F"
+unique(df$sexe_reco)
+
+# Avec ifelse()
+
+df$sexe_reco <- ifelse(df$sexe_reco == "H", "Homme", "Femme")
+unique(df$sexe_reco)
+
+# Avec case_when()
+
+df$sexe_reco <- case_when(
+  df$sexe == "Homme" ~ "H",
+  df$sexe == "Femme" ~ "F"
+)
+unique(df$sexe_reco)
+```
+### Recoder les modalités de la variable clso (avec la fonction fct_recode()) pour regrouper les ouvriers dans une nouvelle variable `qualif_reco`.
+
+```{r}
+levels(df$qualif)
+
+df$qualif_reco <- fct_recode(df$qualif,
+  "Ouvrier" = "Ouvrier specialise",
+  "Ouvrier" = "Ouvrier qualifie"
+)
+
+levels(df$qualif_reco)
+
+### On peut également utiliser mutate()
+
+df <- df %>% 
+  mutate(
+  qualif_reco = fct_recode(
+    qualif, 
+    "Ouvrier" = "Ouvrier specialise",
+    "Ouvrier" = "Ouvrier qualifie"
+  )
+)
+
+levels(df$qualif_reco)
+```
+
+### Supprimer les deux nouvelles colonnes que nous avons créé `sexe_reco` et `qualif_reco`
+```{r}
+### Plusieurs méthodes
+# avec []
+
+condition = names(df) %in% c("sexe_reco", "qualif_reco")
+df[,!condition] %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+
+# Avec selet()
+
+df %>% select(-sexe_reco, -qualif_reco) %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+```
+
+### recoder la variable age dans une nouvelle variable `age_reco`, en créant 5 classes d'âge :
+```{r}
+df$age_reco <- cut(df$age, breaks = 5)
+unique(df$age_reco)
+```
+### Recoder les ages en 5 classes dont vous définirez les limites, et renommer chacune de ces modalités (garder à l'esprit que les sorties de la fonction sont des facteurs !) :
+```{r}
+df$age_reco <- cut(df$age, breaks = c(18, 27, 40, 60, 80, 100), include.lowest = TRUE)
+levels(df$age_reco)
+df$age_reco <- fct_recode(
+  df$age_reco,
+  "Etudiants" = "[18,27]",
+  "Actifs" = "(27,40]",
+  "Fin de carrière" = "(40,60]",
+  "Retraité" = "(60,80]",
+  "Vieux retraité" = "(80,100]"
+)
+```
+
+### Réaliser le tableau de fréquence de votre variable `age_reco`, et trier par ordre décroissant : 
+```{r}
+#### Plusieurs solutions :
+freq(df$age_reco) %>%
+  select(-starts_with("val")) %>% #On supprime les % en valeur réel car pas de NA
+  arrange(desc(n)) %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+
+#Faire à la main
+table(df$age_reco) %>% 
+  as.data.frame() %>%
+  column_to_rownames("Var1") %>%
+  mutate(
+    "%" = round(Freq / sum(Freq) * 100, 2)
+  ) %>%
+  rename(
+    "Effectif" = Freq
+  ) %>%
+  arrange(desc(Effectif)) %>% 
+  kable() %>% 
+  kable_styling("striped") %>% 
+  scroll_box(width = "1000px", height = "400px", fixed_thead = TRUE)
+```
+
+
+
